@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import sveltePreprocess from "svelte-preprocess";
+import postcss from './postcss.config.cjs';
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
@@ -24,5 +25,8 @@ export default defineConfig(async () => ({
     minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_DEBUG,
+  },
+  css: {
+    postcss
   },
 }));
