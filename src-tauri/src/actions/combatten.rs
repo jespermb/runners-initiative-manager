@@ -25,3 +25,10 @@ pub fn get_all_combattens(db: &Connection) -> Result<Vec<Combatten>, rusqlite::E
   let combattens = combattens_iter.collect::<Result<Vec<_>, _>>().unwrap();
   Ok(combattens)
 }
+
+pub fn remove_combatten(id: u32, db: &Connection) -> Result<(), rusqlite::Error> {
+  let mut statement = db.prepare("DELETE FROM combattens WHERE id = @id")?;
+  statement.execute(named_params! { "@id": id })?;
+
+  Ok(())
+}

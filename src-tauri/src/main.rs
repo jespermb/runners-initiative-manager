@@ -26,6 +26,13 @@ fn get_all_combattens(app_handle: AppHandle) -> Vec<combatten::Combatten> {
 }
 
 #[tauri::command]
+fn remove_combatten(app_handle: AppHandle, id: u32) -> String {
+    app_handle.db(|db|  combatten::remove_combatten(id, db)).unwrap();
+
+    format!("{} removed", id)
+}
+
+#[tauri::command]
 fn get_all_campaigns(app_handle: AppHandle) -> Vec<String> {
     let campaigns = app_handle.db(|db| campaign::get_all_campaigns(db)).unwrap();
     campaigns
@@ -34,7 +41,7 @@ fn get_all_campaigns(app_handle: AppHandle) -> Vec<String> {
 fn main() {
     tauri::Builder::default()
         .manage(AppState { db: Default::default() })
-        .invoke_handler(tauri::generate_handler![add_combatten, get_all_combattens])
+        .invoke_handler(tauri::generate_handler![add_combatten, get_all_combattens, remove_combatten])
         .setup(|app| {
             let handle = app.handle();
 
