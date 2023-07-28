@@ -6,7 +6,7 @@
 
   async function getCombattens() {
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    combattens = await invoke("get_all_items");
+    combattens = await invoke("get_all_combattens");
   }
 
   getCombattens();
@@ -17,7 +17,7 @@
   <p>Current combattens:</p>
   <div class="row">
     {#each combattens as combatten}
-      <div>{combatten}</div>
+      <div>{combatten.name}</div>
     {/each}
   </div>
 

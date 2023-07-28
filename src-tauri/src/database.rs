@@ -1,4 +1,4 @@
-use rusqlite::{Connection, named_params};
+use rusqlite::{Connection};
 use tauri::AppHandle;
 use std::fs;
 
@@ -33,34 +33,23 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
 
     tx.execute_batch(
       "
+      CREATE TABLE campaign (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+      );
+      CREATE TABLE encounter (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
+      );
       CREATE TABLE combattens (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL
-      );"
+      );
+      "
     )?;
 
     tx.commit()?;
   }
 
   Ok(())
-}
-
-pub fn add_combatten(name: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO combattens (name) VALUES (@name)")?;
-    statement.execute(named_params! { "@name": name })?;
-
-    Ok(())
-}
-
-pub fn get_all_combattens(db: &Connection) -> Result<Vec<String>, rusqlite::Error> {
-    let mut statement = db.prepare("SELECT * FROM combattens")?;
-    let mut rows = statement.query([])?;
-    let mut items = Vec::new();
-    while let Some(row) = rows.next()? {
-      let name: String = row.get("name")?;
-  
-      items.push(name);
-    }
-
-    Ok(items)
 }

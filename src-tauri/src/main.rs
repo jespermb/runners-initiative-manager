@@ -3,28 +3,38 @@
 
 mod database;
 mod state;
+mod actions;
 
 use state::{AppState, ServiceAccess};
 use tauri::{State, Manager, AppHandle};
 
+use actions::campaign;
+use actions::combatten;
+
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 fn add_combatten(app_handle: AppHandle, name: &str) -> String {
-    app_handle.db(|db|  database::add_combatten(name, db)).unwrap();
+    app_handle.db(|db|  combatten::add_combatten(name, db)).unwrap();
 
     format!("{} added", name)
 }
 
 #[tauri::command]
-fn get_all_items(app_handle: AppHandle) -> Vec<String> {
-    let items = app_handle.db(|db|  database::get_all_combattens(db)).unwrap();
+fn get_all_combattens(app_handle: AppHandle) -> Vec<combatten::Combatten> {
+    let items = app_handle.db(|db|  combatten::get_all_combattens(db)).unwrap();
     items
+}
+
+#[tauri::command]
+fn get_all_campaigns(app_handle: AppHandle) -> Vec<String> {
+    let campaigns = app_handle.db(|db| campaign::get_all_campaigns(db)).unwrap();
+    campaigns
 }
 
 fn main() {
     tauri::Builder::default()
         .manage(AppState { db: Default::default() })
-        .invoke_handler(tauri::generate_handler![add_combatten, get_all_items])
+        .invoke_handler(tauri::generate_handler![add_combatten, get_all_combattens])
         .setup(|app| {
             let handle = app.handle();
 
