@@ -33,17 +33,20 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
 
     tx.execute_batch(
       "
-      CREATE TABLE campaign (
+      CREATE TABLE campaigns (
         id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        version INTEGER NOT NULL
       );
-      CREATE TABLE encounter (
+      CREATE TABLE encounters (
         id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        campaign_id INTEGER NOT NULL
       );
       CREATE TABLE combattens (
         id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        campaign_id INTEGER NOT NULL
       );
       "
     )?;

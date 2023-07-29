@@ -5,20 +5,23 @@
   const dispatch = createEventDispatcher();
 
   let name = "";
+  let version = 6;
   let greetMsg = ""
 
   async function greet(){
     // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    greetMsg = await invoke("add_combatten", { name })
+    greetMsg = await invoke("add_campaign", { name, version })
     name = "";
-    dispatch('combattenAdded');
+    version = 6;
+    dispatch('campaignAdded');
   }
 </script>
 
 <div>
   <form class="row" on:submit|preventDefault={greet}>
-    <input id="greet-input" placeholder="Enter a name..." bind:value={name} />
-    <button type="submit" class="btn btn-primary">Greet</button>
+    <input id="campaign-name" placeholder="Enter a name..." bind:value={name} />
+    <input id="game-version" placeholder="Set the version" bind:value={version} />
+    <button type="submit" class="btn btn-primary">Save</button>
   </form>
   <p>{greetMsg}</p>
 </div>

@@ -1,37 +1,12 @@
 <script lang="ts">
-  import { invoke } from "@tauri-apps/api/tauri";
-  import Greet from "./lib/Greet.svelte";
-    import { get } from "svelte/store";
-
-  let combattens = [];
-
-  async function getCombattens() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    combattens = await invoke("get_all_combattens");
-  }
-
-  async function removeCombatten(id) {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    console.log("Id: " + id)
-    await invoke("remove_combatten", { id });
-    await getCombattens();
-  }
-
-  getCombattens();
+  import Router from 'svelte-spa-router';
+  import Header from "./lib/Header.svelte";
+  import routes from './routes';
 </script>
 
-<main class="container">
-  <h1>Welcome to Tauri!</h1>
-  <p>Current combattens:</p>
-  <div class="list">
-    {#each combattens as combatten}
-      <div class="row"><p>{combatten.name}</p><button on:click={() => removeCombatten(combatten.id)}>Remove</button></div>
-    {/each}
-  </div>
-
-  <div class="row">
-    <Greet on:combattenAdded={getCombattens} />
-  </div>
+<main class="container flex">
+  <Header />
+  <Router {routes}/>
 </main>
 
 <style>
