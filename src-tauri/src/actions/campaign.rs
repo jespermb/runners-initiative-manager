@@ -1,7 +1,9 @@
 use rusqlite::{named_params, Connection};
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../src/types/")]
 pub struct Campaign {
     id: i32,
     name: String,

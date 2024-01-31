@@ -1,16 +1,18 @@
 use rusqlite::{Connection, named_params};
 use serde::{Serialize, Deserialize};
+use ts_rs::TS;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../src/types/")]
 pub struct Combatten {
-    id: i32,
-    name: String,
-    campaign_id: i32,
+    pub id: i32,
+    pub name: String,
+    pub campaign_id: i32,
 }
 
-pub fn add_combatten(name: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-  let mut statement = db.prepare("INSERT INTO combattens (name) VALUES (@name)")?;
-  statement.execute(named_params! { "@name": name })?;
+pub fn add_combatten(db: &Connection, name: &str, campaign_id: i32) -> Result<(), rusqlite::Error> {
+  let mut statement = db.prepare("INSERT INTO combattens (name, campaign_id) VALUES (@name, @campaign_id)")?;
+  statement.execute(named_params! { "@name": name, "@campaign_id": campaign_id })?;
 
   Ok(())
 }
@@ -38,6 +40,13 @@ pub fn view_combatten(db: &Connection, id: i32) -> Result<Combatten, rusqlite::E
     })
   }).unwrap();
   Ok(campaign)
+}
+
+pub fn editcombatten(id: i32, name: &str, db: &Connection) -> Result<(), rusqlite::Error> {
+  let mut statement = db.prepare("UPDATE combattens SET name = @name WHERE id = @id")?;
+  statement.execute(named_params! { "@id": id, "@name": name })?;
+
+  Ok(())
 }
 
 pub fn remove_combatten(id: i32, db: &Connection) -> Result<(), rusqlite::Error> {

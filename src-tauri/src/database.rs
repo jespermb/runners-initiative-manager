@@ -2,7 +2,7 @@ use rusqlite::{Connection};
 use tauri::AppHandle;
 use std::fs;
 
-const CURRENT_DB_VERSION: u32 = 1;
+const CURRENT_DB_VERSION: u32 = 2;
 
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
 /// if it's out of date.
@@ -24,7 +24,7 @@ pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlit
 
 /// Upgrades the database to the current version.
 pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) -> Result<(), rusqlite::Error> {
-  if existing_version < CURRENT_DB_VERSION {
+  if existing_version < 1 {
     db.pragma_update(None, "journal_mode", "WAL")?;
 
     let tx = db.transaction()?;
@@ -47,6 +47,28 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
         campaign_id INTEGER NOT NULL
+      );
+      "
+    )?;
+
+    tx.commit()?;
+  }
+
+  if existing_version < 2 {
+    db.pragma_update(None, "journal_mode", "WAL")?;
+
+    let tx = db.transaction()?;
+
+    tx.pragma_update(None, "user_version", CURRENT_DB_VERSION)?;
+
+    tx.execute_batch(
+      "
+      CREATE TABLE encounter_combattens (
+        id INTEGER PRIMARY KEY,
+        encounter_id INTEGER FOREIGN KEY,
+        combatten_id INTEGER FOREIGN KEY,
+        damange INTEGER
+        initiative INTEGER
       );
       "
     )?;
