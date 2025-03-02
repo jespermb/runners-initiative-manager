@@ -1,0 +1,7 @@
+{
+  "$schema": "./schemas/mobile-schema.json",
+  "identifier": "mobile-capability",
+  "windows": ["main"],
+  "platforms": ["iOS", "android"],
+  "permissions": ["nfc:allow-scan", "biometric:allow-authenticate"]
+}

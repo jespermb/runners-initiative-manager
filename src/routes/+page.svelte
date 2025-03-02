@@ -1,18 +1,18 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/tauri";
+    import { invoke } from "@tauri-apps/api/core";
     import { link } from "svelte-spa-router";
-    import AddCampaign from "../lib/AddCampaign.svelte";
+    import AddCampaign from "../lib/forms/AddCampaign.svelte";
     import type { Campaign } from "../types/Campaign";
 
-    let campaigns: Campaign[] = [];
+    let campaigns = $state([] as Campaign[]);
 
     async function getCampaigns() {
-        // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+        // Learn more about Tauri commands at https://tauri.app/v2/guide/command
         campaigns = await invoke("get_all_campaigns");
     }
 
-    async function removeCampaign(id) {
-        // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+    async function removeCampaign(id: number) {
+        // Learn more about Tauri commands at https://tauri.app/v2/guide/command
         await invoke("remove_campaign", { id });
         await getCampaigns();
     }
@@ -24,14 +24,10 @@
 <div class="grow pt-2">
     {#each campaigns as campaign}
         <div class="flex flex-row w-full">
-            <a
-                class="grow text-base leading-9 font-bold"
-                href={"/campaign/" + campaign.id}
-                use:link>{campaign.name}</a
-            >
+            <a class="grow text-base leading-9" href={"/campaign/" + campaign.id}><span class="font-bold">{campaign.name}</span> ({campaign.version}th edition)</a>
             <button
                 class="border-rounded bg-red-500 hover:bg-red-600"
-                style="padding: 0.3rem 0.4rem;"
+                style="padding: 0 3px; margin: 3px 0;"
                 on:click={() => removeCampaign(campaign.id)}
             >
                 <svg
@@ -52,31 +48,3 @@
     {/each}
 </div>
 <AddCampaign on:campaignAdded={getCampaigns} />
-
-<style>
-    .logo.vite:hover {
-        filter: drop-shadow(0 0 2em #747bff);
-    }
-
-    .logo.svelte:hover {
-        filter: drop-shadow(0 0 2em #ff3e00);
-    }
-    .list {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-    .row {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1em;
-    }
-    .row p {
-        flex-grow: 1;
-    }
-    .row button {
-        justify-self: flex-end;
-    }
-</style>

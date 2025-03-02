@@ -1,24 +1,18 @@
 <script lang="ts">
-    import { invoke } from "@tauri-apps/api/tauri";
-    import EncounterListItem from "../lib/EncounterListItem.svelte";
-    import CombattenListItem from "../lib/CombattenListItem.svelte";
-    import NotFound from "./NotFound.svelte";
-    import type { Combatten } from "../types/Combatten";
-    import type { Encounter } from "../types/Encounter";
-    export let params = {
-        id: "",
-    };
-    let campaignId = parseInt(params.id);
-    let showEncounterForm = false;
-    let showCombattenForm = false;
-    let campaign = {
-        name: "",
-    };
-    let combattens: Combatten[] = [];
-    let encounters: Encounter[] = [];
-    async function getCampaign(id: number) {
-        campaign = await invoke("get_campaign", { id });
-    }
+    import { invoke } from "@tauri-apps/api/core";
+    import { link } from "svelte-spa-router";
+    import EncounterListItem from "../../../lib/EncounterListItem.svelte";
+    import CombattenListItem from "../../../lib/CombattenListItem.svelte";
+    import type { Combatten } from "../../../types/Combatten";
+    import type { Encounter } from "../../../types/Encounter";
+    import type { PageProps } from './$types';
+    
+    let campaign = $state({ name: "", id: 0 });
+    let campaignId = $state(0);
+    let showEncounterForm = $state(false);
+    let showCombattenForm = $state(false);
+    let combattens = $state([] as Combatten[]);
+    let encounters = $state([] as Encounter[]);
     async function getCombattens(id: number) {
         combattens = await invoke("get_all_combattens", { campaignId: id });
     }
@@ -26,11 +20,12 @@
         encounters = await invoke("get_all_encounters", { campaignId: id });
     }
 
-    getCampaign(campaignId);
-    getCombattens(campaignId);
-    getEncounters(campaignId);
-    let encounterName = "";
-    console.log("ID:" + campaignId);
+	let { data }: PageProps = $props();
+    campaign = data.campaign;
+    campaignId = data.campaign.id;
+    encounters = data.encounters;
+    combattens = data.combattens;
+    let encounterName = $state("");
     async function addEncounter() {
         await invoke("add_encounter", {
             name: encounterName,
@@ -38,8 +33,8 @@
         });
         encounterName = "";
     }
-    let combattenName = "";
-    let visibleTab = "encounters";
+    let combattenName = $state("");
+    let visibleTab = $state("encounters");
     async function addCombatten() {
         await invoke("add_combatten", {
             name: combattenName,
@@ -58,7 +53,7 @@
     }
 </script>
 
-<h2>Campaign: {campaign.name}</h2>
+<h2 class="mb-3">Campaign: {campaign.name}</h2>
 <ul
     class="flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400"
 >
@@ -105,11 +100,17 @@
 {#if visibleTab === "encounters"}
     <div class="flex flex-col gap-2 p-2">
         {#each encounters as encounter}
-            <EncounterListItem
-                name={encounter.name}
-                id={encounter.id}
-                on:encounterRemoved={encounterRemoved}
-            />
+
+        <a
+            class="grow text-base leading-9 font-bold"
+            href={"/encounter/" + encounter.id}
+            use:link>
+                <EncounterListItem
+                    name={encounter.name}
+                    id={encounter.id}
+                    on:encounterRemoved={encounterRemoved}
+                />
+        </a>
         {/each}
     </div>
 {/if}

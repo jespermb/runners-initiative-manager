@@ -1,5 +1,5 @@
 use rusqlite::{Connection};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use std::fs;
 
 const CURRENT_DB_VERSION: u32 = 2;
@@ -7,10 +7,10 @@ const CURRENT_DB_VERSION: u32 = 2;
 /// Initializes the database connection, creating the .sqlite file if needed, and upgrading the database
 /// if it's out of date.
 pub fn initialize_database(app_handle: &AppHandle) -> Result<Connection, rusqlite::Error> {
-    let app_dir = app_handle.path_resolver().app_data_dir().expect("The app data directory should exist.");
+    let app_dir = app_handle.path().app_data_dir().expect("The app data directory should exist.");
     fs::create_dir_all(&app_dir).expect("The app data directory should be created.");
     let sqlite_path = app_dir.join("initiative.sqlite");
-
+    //fs::remove_file(sqlite_path.clone()).ok();
     let mut db = Connection::open(sqlite_path)?;
 
     let mut user_pragma = db.prepare("PRAGMA user_version")?;
@@ -46,6 +46,8 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
       CREATE TABLE combattens (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
+        physical INTEGER NOT NULL,
+        stun INTEGER NOT NULL,
         campaign_id INTEGER NOT NULL
       );
       "
@@ -65,8 +67,8 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
       "
       CREATE TABLE encounter_combattens (
         id INTEGER PRIMARY KEY,
-        encounter_id INTEGER FOREIGN KEY,
-        combatten_id INTEGER FOREIGN KEY,
+        encounter_id INTEGER NOT NULL,
+        combatten_id INTEGER NOT NULL,
         damange INTEGER
         initiative INTEGER
       );

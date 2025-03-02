@@ -2,7 +2,7 @@ use rusqlite::{named_params, Connection};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use super::combatten::{Combatten, self};
+use super::combatten::{Combatten};
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../src/types/")]
@@ -75,7 +75,10 @@ pub fn view_encounter(db: &Connection, id: i32) -> Result<Encounter, rusqlite::E
         })
         .unwrap();
     let mut combStatement = 
-        db.prepare("SELECT c.id, c.name, c.campaign_id FROM combatten_encounter ce LEFT JOIN combatten c ON (c.id = ce.combatten_id) WHERE ce.encounter_id = @id")?;
+        db.prepare("SELECT c.id, c.name, c.campaign_id 
+        FROM encounter_combattens ce 
+        LEFT JOIN combattens c ON (c.id = ce.combatten_id) 
+        WHERE ce.encounter_id = @id")?;
     let combattens_iter = combStatement
         .query_map(named_params! { "@id": id }, |row| {
             Ok(Combatten {
@@ -93,6 +96,20 @@ pub fn view_encounter(db: &Connection, id: i32) -> Result<Encounter, rusqlite::E
 pub fn remove_encounter(id: i32, db: &Connection) -> Result<(), rusqlite::Error> {
     let mut statement = db.prepare("DELETE FROM encounters WHERE id = @id")?;
     statement.execute(named_params! { "@id": id })?;
+
+    Ok(())
+}
+
+pub fn add_combatten_to_encounter(
+    db: &Connection,
+    encounter_id: i32,
+    initiative: i32,
+    combatten_id: i32,
+) -> Result<(), rusqlite::Error> {
+    let mut statement = db.prepare(
+        "INSERT INTO encounter_combattens (encounter_id, combatten_id, initiative) VALUES (@encounter_id, @combatten_id, @initiative)",
+    )?;
+    statement.execute(named_params! { "@encounter_id": encounter_id, "@combatten_id": combatten_id, "@initiative": initiative })?;
 
     Ok(())
 }

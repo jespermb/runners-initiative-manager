@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
-    export let name: string = "";
+    const { name = "" } = $props<{ name: string }>();
 
     async function remove() {
         dispatch("remove");
@@ -10,5 +10,5 @@
 
 <div class="encounter flex flex-row justify-between">
     <h2>{name}</h2>
-    <button on:click={remove}>Remove</button>
+    <button onclick={remove}>Remove</button>
 </div>

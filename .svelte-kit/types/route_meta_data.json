@@ -1,0 +1,13 @@
+{
+	"/": [
+		"src/routes/+layout.ts",
+		"src/routes/+layout.ts"
+	],
+	"/campaign/[id]": [
+		"src/routes/campaign/[id]/+page.ts",
+		"src/routes/+layout.ts"
+	],
+	"/encounter/[id]": [
+		"src/routes/+layout.ts"
+	]
+}

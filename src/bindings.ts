@@ -12,9 +12,9 @@
 
 /** tauri-specta globals **/
 
-         import { invoke as TAURI_INVOKE } from "@tauri-apps/api";
+         import { invoke as TAURI_INVOKE } from "@tauri-apps/api/core";
 import * as TAURI_API_EVENT from "@tauri-apps/api/event";
-import { type WebviewWindowHandle as __WebviewWindowHandle__ } from "@tauri-apps/api/window";
+import { type WebviewWindow as __WebviewWindowHandle__ } from "@tauri-apps/api/webviewWindow";
 
 type __EventObj__<T> = {
   listen: (
@@ -66,5 +66,3 @@ function __makeEvents__<T extends Record<string, any>>(
     }
   );
 }
-
-     
