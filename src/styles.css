@@ -1,1 +1,120 @@
 @import "tailwindcss";
+@plugin "daisyui" {
+  themes: night --default;
+}
+
+/* Cyberpunk Theme Global Styles */
+:root {
+  --cyberpunk-primary: #00f3ff;
+  --cyberpunk-secondary: #ff00ff;
+  --cyberpunk-bg-dark: #0a0a0a;
+  --cyberpunk-text: #ffffff;
+  --cyberpunk-text-muted: #a0a0a0;
+}
+
+body {
+  background-color: #121212;
+  color: var(--cyberpunk-text);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Cyberpunk Button Styles */
+.cyberpunk-btn {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.cyberpunk-btn.edit {
+  border-color: var(--cyberpunk-primary);
+  color: var(--cyberpunk-primary);
+}
+
+.cyberpunk-btn.delete {
+  border-color: var(--cyberpunk-secondary);
+  color: var(--cyberpunk-secondary);
+}
+
+.cyberpunk-btn.edit:hover {
+  background-color: rgba(0, 243, 255, 0.1);
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
+}
+
+.cyberpunk-btn.delete:hover {
+  background-color: rgba(255, 0, 255, 0.1);
+  box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background-color: var(--cyberpunk-bg-dark);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  width: 90%;
+  max-width: 500px;
+  border: 1px solid var(--cyberpunk-primary);
+  box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+}
+
+/* Form Elements */
+input, select, textarea {
+  background-color: #1a1a1a;
+  border: 1px solid var(--cyberpunk-primary);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+  outline: none;
+}
+
+/* Button Styles */
+.btn {
+  background-color: transparent;
+  border: 1px solid var(--cyberpunk-primary);
+  color: var(--cyberpunk-primary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+}
+
+.btn-primary {
+  background-color: rgba(0, 243, 255, 0.1);
+}
+
+.btn-primary:hover {
+  background-color: rgba(0, 243, 255, 0.2);
+}

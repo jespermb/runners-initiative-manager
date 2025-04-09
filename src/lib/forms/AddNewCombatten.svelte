@@ -68,7 +68,7 @@
             id="combatten-name"
             placeholder="Enter a name"
             bind:value={name}
-            class={`input input-bordered w-full max-w-xs${errors.name && errors.name?.length > 0 ? " input-error" : ""}`}
+            class={`input input-bordered w-full ${errors.name && errors.name?.length > 0 ? " input-error" : ""}`}
         />
         {#if errors.name && errors.name?.length > 0}
             <p class="text-error">{errors.name?.[0]}</p>
@@ -80,7 +80,7 @@
             placeholder="Enter initiative"
             bind:value={initiative}
             type="number"
-            class={`input input-bordered w-full max-w-xs${errors.initiative && errors.initiative?.length > 0 ? " input-error" : ""}`}
+            class={`input input-bordered w-full ${errors.initiative && errors.initiative?.length > 0 ? " input-error" : ""}`}
         />
         {#if errors.initiative && errors.initiative?.length > 0}
             <p class="text-error">{errors.initiative?.[0]}</p>
@@ -92,7 +92,7 @@
             placeholder="Enter physical health"
             bind:value={physical}
             type="number"
-            class={`input input-bordered w-full max-w-xs${errors.physical && errors.physical?.length > 0 ? " input-error" : ""}`}
+            class={`input input-bordered w-full ${errors.physical && errors.physical?.length > 0 ? " input-error" : ""}`}
         />
         {#if errors.physical && errors.physical?.length > 0}
             <p class="text-error">{errors.physical?.[0]}</p>
@@ -104,12 +104,12 @@
             placeholder="Enter stun health"
             bind:value={stun}
             type="number"
-            class={`input input-bordered w-full max-w-xs${errors.stun && errors.stun?.length > 0 ? " input-error" : ""}`}
+            class={`input input-bordered w-full ${errors.stun && errors.stun?.length > 0 ? " input-error" : ""}`}
         />
         {#if errors.stun && errors.stun?.length > 0}
             <p class="text-error">{errors.stun?.[0]}</p>
         {/if}
-        <button type="submit" class="btn btn-primary max-w-xs">Save</button>
+        <button type="submit" class="btn btn-primary justify-self-end">Save</button>
     </form>
     <p>{greetMsg}</p>
 </div>

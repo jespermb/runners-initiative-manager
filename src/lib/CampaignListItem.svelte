@@ -1,37 +1,30 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
-    const dispatch = createEventDispatcher();
-    const { name = "" } = $props<{ name: string }>();
-
-    function edit() {
-        dispatch("edit");
-    }
-
+    import type { Campaign } from "../types/Campaign";
+    
+    const dispatch = createEventDispatcher<{
+        campaignRemoved: { id: number }
+    }>();
+    
+    export let campaign: Campaign;
+    
     function remove() {
         // Show confirmation dialog
-        if (confirm(`Are you sure you want to remove "${name}"?`)) {
-            dispatch("remove");
+        if (confirm(`Are you sure you want to remove "${campaign.name}"?`)) {
+            dispatch("campaignRemoved", { id: campaign.id });
         }
     }
 </script>
 
 <div class="cyberpunk-item">
     <div class="item-content">
-        <h2 class="item-name">{name}</h2>
+        <h2 class="item-name">{campaign.name}</h2>
+        <p class="item-version">{campaign.version}th edition</p>
     </div>
     <div class="item-actions">
         <button 
-            class="cyberpunk-btn edit"
-            onclick={edit}
-            aria-label="Edit"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-        </button>
-        <button 
             class="cyberpunk-btn delete"
-            onclick={remove}
+            on:click={remove}
             aria-label="Remove"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,6 +48,12 @@
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
         position: relative;
         overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cyberpunk-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 243, 255, 0.3);
     }
 
     .cyberpunk-item::before {
@@ -86,6 +85,14 @@
         text-overflow: ellipsis;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        color: #ffffff;
+        text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+    }
+
+    .item-version {
+        font-size: 0.75rem;
+        margin: 0.25rem 0 0;
+        color: #a0a0a0;
     }
 
     .item-actions {
@@ -107,19 +114,9 @@
         transition: all 0.2s ease;
     }
 
-    .cyberpunk-btn.edit {
-        border-color: #00f3ff;
-        color: #00f3ff;
-    }
-
     .cyberpunk-btn.delete {
         border-color: #ff00ff;
         color: #ff00ff;
-    }
-
-    .cyberpunk-btn.edit:hover {
-        background-color: rgba(0, 243, 255, 0.1);
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
     }
 
     .cyberpunk-btn.delete:hover {

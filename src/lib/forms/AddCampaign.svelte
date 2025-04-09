@@ -9,12 +9,30 @@
     let greetMsg = $state("");
 
     async function greet() {
-        // Learn more about Tauri commands at https://tauri.app/v2/guide/command
-        const campaignVersion = parseInt(`${version}`);
-        greetMsg = await invoke("add_campaign", { name, version: campaignVersion });
-        name = "";
-        version = 6;
-        dispatch("campaignAdded");
+        try {
+            // Learn more about Tauri commands at https://tauri.app/v2/guide/command
+            const campaignVersion = parseInt(`${version}`);
+            
+            // Store the current values before resetting them
+            const currentName = name;
+            const currentVersion = campaignVersion;
+            
+            try {
+                greetMsg = await invoke("add_campaign", { name, version: campaignVersion });
+            } catch (error) {
+                console.error("Error invoking add_campaign:", error);
+                // In browser mode, this will fail, but we'll handle it in the parent component
+            }
+            
+            // Reset form values
+            name = "";
+            version = 6;
+            
+            // Dispatch event with the campaign details
+            dispatch("campaignAdded", { name: currentName, version: currentVersion });
+        } catch (error) {
+            console.error("Error in greet function:", error);
+        }
     }
 </script>
 

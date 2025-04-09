@@ -1,5 +1,7 @@
-use rusqlite::{Connection, named_params};
-use serde::{Serialize, Deserialize};
+use crate::database::DbPool;
+use rusqlite::named_params;
+use serde::{Deserialize, Serialize};
+use tauri::State;
 use ts_rs::TS;
 
 #[derive(Debug, Serialize, Deserialize, TS)]
@@ -10,61 +12,136 @@ pub struct Combatten {
     pub campaign_id: i32,
 }
 
-pub fn add_combatten(db: &Connection, name: &str, physical: i32, stun: i32, campaign_id: i32) -> Result<i32, rusqlite::Error> {
-  let mut statement = db.prepare("INSERT INTO combattens (name, physical, stun, campaign_id) VALUES (@name, @physical, @stun, @campaign_id)")?;
-  statement.execute(named_params! { "@name": name, "@physical": physical, "@stun": stun, "@campaign_id": campaign_id })?;
-  let id: i64 = db.last_insert_rowid();
-  Ok(id.try_into().unwrap())
+#[tauri::command]
+pub async fn add_combatten(
+    state: State<'_, DbPool>,
+    name: &str,
+    physical: i32,
+    stun: i32,
+    campaign_id: i32,
+) -> Result<Combatten, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("INSERT INTO combattens (name, physical, stun, campaign_id) VALUES (@name, @physical, @stun, @campaign_id)")
+        .map_err(|e| e.to_string())?;
+    
+    statement
+        .execute(named_params! {
+            "@name": name,
+            "@physical": physical,
+            "@stun": stun,
+            "@campaign_id": campaign_id
+        })
+        .map_err(|e| e.to_string())?;
+    
+    let id: i64 = conn.last_insert_rowid();
+    let id_i32: i32 = id.try_into().map_err(|_| "Failed to convert rowid to i32".to_string())?;
+    
+    // Fetch the newly created combatten
+    let combatten = view_combatten_internal(&conn, id_i32)
+        .map_err(|e| e.to_string())?;
+    
+    Ok(combatten)
 }
 
-pub fn get_all_combattens(db: &Connection) -> Result<Vec<Combatten>, rusqlite::Error> {
-  let mut statement = db.prepare("SELECT id, name, campaign_id FROM combattens")?;
-  let combattens_iter = statement.query_map([], |row| {
-    Ok(Combatten {
-      id: row.get(0)?,
-      name: row.get(1)?,
-      campaign_id: row.get(2)?,
-    })
-  }).unwrap();
-  let combattens = combattens_iter.collect::<Result<Vec<_>, _>>().unwrap();
-  Ok(combattens)
+#[tauri::command]
+pub async fn get_all_combattens(state: State<'_, DbPool>) -> Result<Vec<Combatten>, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("SELECT id, name, campaign_id FROM combattens")
+        .map_err(|e| e.to_string())?;
+    
+    let combattens_iter = statement
+        .query_map([], |row| {
+            Ok(Combatten {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                campaign_id: row.get(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    
+    let combattens = combattens_iter
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    
+    Ok(combattens)
 }
 
-pub fn get_all_campaign_combattens(db: &Connection, campaign_id: i32) -> Result<Vec<Combatten>, rusqlite::Error> {
-  let mut statement = db.prepare("SELECT id, name, campaign_id FROM combattens WHERE campaign_id = @campaign_id")?;
-  let combattens_iter = statement.query_map(named_params! { "@campaign_id": campaign_id }, |row| {
-    Ok(Combatten {
-      id: row.get(0)?,
-      name: row.get(1)?,
-      campaign_id: row.get(2)?,
-    })
-  }).unwrap();
-  let combattens = combattens_iter.collect::<Result<Vec<_>, _>>().unwrap();
-  Ok(combattens)
+#[tauri::command]
+pub async fn get_all_campaign_combattens(
+    state: State<'_, DbPool>,
+    campaign_id: i32,
+) -> Result<Vec<Combatten>, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("SELECT id, name, campaign_id FROM combattens WHERE campaign_id = @campaign_id")
+        .map_err(|e| e.to_string())?;
+    
+    let combattens_iter = statement
+        .query_map(named_params! { "@campaign_id": campaign_id }, |row| {
+            Ok(Combatten {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                campaign_id: row.get(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    
+    let combattens = combattens_iter
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    
+    Ok(combattens)
 }
 
-pub fn view_combatten(db: &Connection, id: i32) -> Result<Combatten, rusqlite::Error> {
-  let mut statement = db.prepare("SELECT id, name, campaign_id FROM combattens WHERE id = @id")?;
-  let campaign = statement.query_row(named_params! { "@id": id }, |row| {
-    Ok(Combatten {
-      id: row.get(0)?,
-      name: row.get(1)?,
-      campaign_id: row.get(2)?,
-    })
-  }).unwrap();
-  Ok(campaign)
+// Internal function to reuse in add_combatten
+fn view_combatten_internal(conn: &rusqlite::Connection, id: i32) -> Result<Combatten, rusqlite::Error> {
+    let mut statement = conn.prepare("SELECT id, name, campaign_id FROM combattens WHERE id = @id")?;
+    let combatten = statement.query_row(named_params! { "@id": id }, |row| {
+        Ok(Combatten {
+            id: row.get(0)?,
+            name: row.get(1)?,
+            campaign_id: row.get(2)?,
+        })
+    })?;
+    Ok(combatten)
 }
 
-pub fn edit_combatten(id: i32, name: &str, db: &Connection) -> Result<(), rusqlite::Error> {
-  let mut statement = db.prepare("UPDATE combattens SET name = @name WHERE id = @id")?;
-  statement.execute(named_params! { "@id": id, "@name": name })?;
-
-  Ok(())
+#[tauri::command]
+pub async fn get_combatten(state: State<'_, DbPool>, id: i32) -> Result<Combatten, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    view_combatten_internal(&conn, id).map_err(|e| e.to_string())
 }
 
-pub fn remove_combatten(id: i32, db: &Connection) -> Result<(), rusqlite::Error> {
-  let mut statement = db.prepare("DELETE FROM combattens WHERE id = @id")?;
-  statement.execute(named_params! { "@id": id })?;
+#[tauri::command]
+pub async fn edit_combatten(
+    state: State<'_, DbPool>,
+    id: i32,
+    name: &str,
+) -> Result<String, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("UPDATE combattens SET name = @name WHERE id = @id")
+        .map_err(|e| e.to_string())?;
+    
+    statement
+        .execute(named_params! { "@id": id, "@name": name })
+        .map_err(|e| e.to_string())?;
 
-  Ok(())
+    Ok(format!("Combatten {} updated", id))
+}
+
+#[tauri::command]
+pub async fn remove_combatten(state: State<'_, DbPool>, id: i32) -> Result<String, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("DELETE FROM combattens WHERE id = @id")
+        .map_err(|e| e.to_string())?;
+    
+    statement
+        .execute(named_params! { "@id": id })
+        .map_err(|e| e.to_string())?;
+
+    Ok(format!("Combatten {} removed", id))
 }

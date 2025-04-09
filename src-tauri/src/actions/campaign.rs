@@ -1,51 +1,81 @@
-use rusqlite::{named_params, Connection};
+use crate::database::DbPool;
+use rusqlite::named_params;
 use serde::{Deserialize, Serialize};
+use tauri::State;
 use ts_rs::TS;
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../src/types/")]
 pub struct Campaign {
-    id: i32,
-    name: String,
-    version: i32,
+    pub id: i32,
+    pub name: String,
+    pub version: i32,
 }
 
-pub fn add_campaign(db: &Connection, name: &str, version: i32) -> Result<(), rusqlite::Error> {
-    let mut statement = db.prepare("INSERT INTO campaigns (name, version) VALUES (@name, @version)")?;
-    statement.execute(named_params! { "@name": name, "@version": version })?;
+#[tauri::command]
+pub async fn add_campaign(state: State<'_, DbPool>, name: &str, version: i32) -> Result<String, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("INSERT INTO campaigns (name, version) VALUES (@name, @version)")
+        .map_err(|e| e.to_string())?;
+    statement
+        .execute(named_params! { "@name": name, "@version": version })
+        .map_err(|e| e.to_string())?;
 
-    Ok(())
+    Ok(format!("{} added", name))
 }
 
-pub fn get_all_campaigns(db: &Connection) -> Result<Vec<Campaign>, rusqlite::Error> {
-    let mut statement = db.prepare("SELECT * FROM campaigns")?;
-    let campaign_iter = statement.query_map([], |row| {
-      Ok(Campaign {
-        id: row.get(0)?,
-        name: row.get(1)?,
-        version: row.get(2)?,
-      })
-    }).unwrap();
-    let campaigns = campaign_iter.collect::<Result<Vec<_>, _>>().unwrap();
+#[tauri::command]
+pub async fn get_all_campaigns(state: State<'_, DbPool>) -> Result<Vec<Campaign>, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn.prepare("SELECT * FROM campaigns").map_err(|e| e.to_string())?;
+    let campaign_iter = statement
+        .query_map([], |row| {
+            Ok(Campaign {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                version: row.get(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    
+    let campaigns = campaign_iter
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| e.to_string())?;
+    
     Ok(campaigns)
 }
 
-pub fn view_campaign(db: &Connection, id: i32) -> Result<Campaign, rusqlite::Error> {
-  let mut statement = db.prepare("SELECT id, name, version FROM campaigns WHERE id = @id")?;
-  let campaign = statement.query_row(named_params! { "@id": id }, |row| {
-    Ok(Campaign {
-      id: row.get(0)?,
-      name: row.get(1)?,
-      version: row.get(2)?,
-    })
-  }).unwrap();
-  Ok(campaign)
+#[tauri::command]
+pub async fn get_campaign(state: State<'_, DbPool>, id: i32) -> Result<Campaign, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("SELECT id, name, version FROM campaigns WHERE id = @id")
+        .map_err(|e| e.to_string())?;
+    
+    let campaign = statement
+        .query_row(named_params! { "@id": id }, |row| {
+            Ok(Campaign {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                version: row.get(2)?,
+            })
+        })
+        .map_err(|e| e.to_string())?;
+    
+    Ok(campaign)
 }
 
-pub fn remove_campaign(db: &Connection, id: i32) -> Result<(), rusqlite::Error> {
-  let mut statement = db.prepare("DELETE FROM campaigns WHERE id = @id")?;
-  statement.execute(named_params! { "@id": id })?;
+#[tauri::command]
+pub async fn remove_campaign(state: State<'_, DbPool>, id: i32) -> Result<String, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare("DELETE FROM campaigns WHERE id = @id")
+        .map_err(|e| e.to_string())?;
+    
+    statement
+        .execute(named_params! { "@id": id })
+        .map_err(|e| e.to_string())?;
 
-  Ok(print!("Campaign {} removed.", id))
+    Ok(format!("Campaign {} removed", id))
 }
-
