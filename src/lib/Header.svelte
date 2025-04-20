@@ -1,13 +1,11 @@
 <script>
-  // Generate random delays for animations
-  const scanDelay = Math.random() * 3; // Random delay between 0-3 seconds
-  const glitchDelay = Math.random() * 2 + 1; // Random delay between 1-3 seconds
+  // Static values for consistent styling
+  const scanDelay = 0; // Fixed delay
 </script>
 
 <header class="cyberpunk-header">
   <div class="glitch-container">
     <h1 class="cyberpunk-title" style="--scan-delay: {scanDelay}">Runners initiative manager</h1>
-    <h1 class="cyberpunk-title glitch" style="--glitch-delay: {glitchDelay}" aria-hidden="true">Runners initiative manager</h1>
   </div>
 </header>
 
@@ -31,7 +29,7 @@
     width: 100%;
     text-align: center;
   }
-
+  
   .cyberpunk-title {
     text-transform: uppercase;
     font-size: 1rem;
@@ -54,22 +52,13 @@
     left: -10px;
     width: 10px;
     height: 100%;
-    background-color: var(--neon-border-color);
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(0, 243, 255, 0.5), 
+      transparent);
     filter: blur(5px);
     animation: scan 8s linear infinite;
     animation-delay: calc(var(--scan-delay, 0) * 1s);
-  }
-
-  .cyberpunk-title.glitch {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    opacity: 0.5;
-    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
-    transform: translate(-2px, 0);
-    animation: glitch-top 5s infinite alternate-reverse;
-    animation-delay: calc(var(--glitch-delay, 0) * 1s);
   }
 
   @keyframes scan {
@@ -81,15 +70,4 @@
     }
   }
 
-  @keyframes glitch-top {
-    0%, 90% {
-      transform: translate(-1px, 0);
-    }
-    10%, 30%, 50%, 70% {
-      transform: translate(1px, 0);
-    }
-    20%, 40%, 60%, 80%, 100% {
-      transform: translate(-1px, 0);
-    }
-  }
 </style>

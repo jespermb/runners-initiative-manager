@@ -9,15 +9,15 @@
     import type { Encounter } from "../../../types/Encounter";
     import type { PageProps } from './$types';
     import AddNewCombatten from "$lib/forms/AddNewCombatten.svelte";
+    import AddNewEncounter from "$lib/forms/AddNewEncounter.svelte";
     import FabButton from "../../../lib/FabButton.svelte";
     
     let campaign = $state({ name: "", id: 0 });
     let campaignId = $state(0);
-    let showEncounterForm = $state(false);
-    let showCombattenForm = $state(false);
     let combattens = $state([] as Combatten[]);
     let encounters = $state([] as Encounter[]);
     let combDialog = $state<HTMLDialogElement | null>(null);
+    let encounterDialog = $state<HTMLDialogElement | null>(null);
     let visibleTab = $state("encounters");
     
     async function getCombattens(id: number) {
@@ -34,15 +34,9 @@
     encounters = data.encounters;
     combattens = data.combattens;
     
-    let encounterName = $state("");
-    async function addEncounter() {
-        await invoke("add_encounter", {
-            name: encounterName,
-            campaignId: campaignId,
-        });
-        encounterName = "";
+    async function handleEncounterSaved() {
         getEncounters(campaignId);
-        showEncounterForm = false;
+        encounterDialog?.close();
     }
     
     let combattenName = $state("");
@@ -88,14 +82,20 @@
 
 <PageLayout>
     <svelte:fragment slot="header">
-        <h2 class="header-title">Campaign: {campaign.name}</h2>
+        <div class="flex items-center">
+            <a href="/" class="cyberpunk-btn return mr-3" aria-label="Return">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h2 class="header-title">Campaign: {campaign.name}</h2>
+        </div>
         <button 
             class="cyberpunk-btn edit"
-            on:click={() => {
-                // Edit campaign functionality would go here
-                // For now, just a placeholder
+            onclick={() => {
                 alert('Edit campaign: ' + campaign.name);
             }}
+            aria-label="Edit Campaign"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -107,10 +107,7 @@
         {#if visibleTab === "encounters"}
             <div class="flex flex-col gap-2 p-2">
                 {#each encounters as encounter}
-                <a
-                    class="grow text-base leading-9 font-bold"
-                    href={"/encounter/" + encounter.id}
-                    use:link>
+                <a class="grow text-base leading-9 font-bold" href={"/encounter/" + encounter.id}>
                         <EncounterListItem
                             name={encounter.name}
                             id={encounter.id}
@@ -137,7 +134,7 @@
         <FabButton 
             onClick={() => {
                 if (visibleTab === "encounters") {
-                    showEncounterForm = true;
+                    encounterDialog?.showModal();
                 } else {
                     combDialog?.showModal();
                 }
@@ -150,69 +147,30 @@
     </svelte:fragment>
 </PageLayout>
 
-<!-- Forms and Dialogs -->
-{#if showEncounterForm}
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <form on:submit|preventDefault={addEncounter} class="justify-self-end">
-                <h3 class="text-lg font-bold mb-4">Add New Encounter</h3>
-                <input
-                    id="add-encounter"
-                    placeholder="Encounter name"
-                    bind:value={encounterName}
-                    class="input input-bordered w-full mb-4"
-                />
-                <div class="flex justify-between">
-                    <button 
-                        type="button" 
-                        class="btn btn-outline" 
-                        on:click={() => (showEncounterForm = false)}
-                    >
-                        Cancel
-                    </button>
-                    <input class="btn btn-primary" type="submit" value="Add" />
-                </div>
-            </form>
+<!-- Encounter Dialog -->
+<dialog class="modal cyberpunk-modal" bind:this={encounterDialog}>
+    <div class="modal-box cyberpunk-dialog-content">
+        <h3 class="text-lg font-bold mb-4">Add New Encounter</h3>
+        <AddNewEncounter campaignId={campaignId} onSave={handleEncounterSaved} />
+        <div class="modal-action">
+            <button class="btn btn-outline" onclick={() => encounterDialog?.close()}>Close</button>
         </div>
     </div>
-{/if}
+</dialog>
 
 <dialog class="modal cyberpunk-modal" bind:this={combDialog}>
-    <div class="modal-box">
+    <div class="modal-box cyberpunk-dialog-content">
         <h3 class="text-lg font-bold mb-4">Add New Player</h3>
-        <AddNewCombatten campaignId={campaignId} />
+        <AddNewCombatten campaignId={campaignId} onSave={() => combDialog?.close()} />
         <div class="modal-action">
-            <button class="btn btn-outline" on:click={() => combDialog?.close()}>Close</button>
+            <button class="btn btn-outline" onclick={() => combDialog?.close()}>Close</button>
         </div>
     </div>
 </dialog>
 
 <style>
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 30;
-        backdrop-filter: blur(3px);
-    }
 
-    .modal-content {
-        background-color: #0a0a0a;
-        color: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        width: 90%;
-        max-width: 500px;
-        border: 1px solid #00f3ff;
-        box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
-    }
-
+    /* Cyberpunk Dialog Styling */
     dialog.cyberpunk-modal::backdrop {
         background-color: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(3px);
@@ -223,29 +181,87 @@
         color: white;
         border: 1px solid #00f3ff;
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+        animation: cyberpunk-glow 1.5s ease-in-out infinite alternate;
     }
 
+    @keyframes cyberpunk-glow {
+        from {
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        to {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 30px rgba(255, 0, 255, 0.3);
+        }
+    }
+
+    .cyberpunk-dialog-content {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cyberpunk-dialog-content::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        height: 2px;
+        background: linear-gradient(90deg, #ff00ff, #00f3ff);
+        animation: cyberpunk-scan 2s linear infinite;
+    }
+
+    @keyframes cyberpunk-scan {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(calc(100% + 4px));
+        }
+    }
+
+    /* Cyberpunk Button Styling */
     :global(dialog.cyberpunk-modal .btn) {
         background-color: transparent;
         border: 1px solid #00f3ff;
         color: #00f3ff;
         text-transform: uppercase;
         letter-spacing: 1px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    :global(dialog.cyberpunk-modal .btn::before) {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+        transition: all 0.5s ease;
+    }
+
+    :global(dialog.cyberpunk-modal .btn:hover::before) {
+        left: 100%;
     }
 
     :global(dialog.cyberpunk-modal .btn:hover) {
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+        transform: translateY(-2px);
     }
 
+    /* Cyberpunk Input Styling */
     :global(dialog.cyberpunk-modal input) {
         background-color: #1a1a1a;
         border: 1px solid #00f3ff;
         color: white;
+        transition: all 0.3s ease;
     }
 
     :global(dialog.cyberpunk-modal input:focus) {
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         outline: none;
+        border-color: #ff00ff;
     }
 
     .cyberpunk-btn {
@@ -262,12 +278,12 @@
         z-index: 1;
     }
 
-    .cyberpunk-btn.edit {
+    .cyberpunk-btn.edit, .cyberpunk-btn.return {
         border-color: #00f3ff;
         color: #00f3ff;
     }
 
-    .cyberpunk-btn.edit:hover {
+    .cyberpunk-btn.edit:hover, .cyberpunk-btn.return:hover {
         background-color: rgba(0, 243, 255, 0.1);
         box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
     }

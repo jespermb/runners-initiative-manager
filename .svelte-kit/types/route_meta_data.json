@@ -8,6 +8,7 @@
 		"src/routes/+layout.ts"
 	],
 	"/encounter/[id]": [
+		"src/routes/encounter/[id]/+page.ts",
 		"src/routes/+layout.ts"
 	]
 }

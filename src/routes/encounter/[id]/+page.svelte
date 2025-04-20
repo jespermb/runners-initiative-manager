@@ -1,55 +1,58 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
     import { slide } from 'svelte/transition';
-	import { sineInOut } from 'svelte/easing';
+    import { sineInOut } from 'svelte/easing';
+    import { page } from '$app/stores';
     import EncCombattenListItem from "../../../lib/EncCombattenListItem.svelte";
-    import CombattenMenu from "../../../lib/CombattenMenu.svelte";
-    import type { Combatten } from "../../../types/Combatten";
     import type { Encounter } from "../../../types/Encounter";
+    import type { PageProps } from './$types';
     import AddNewCombatten from "../../../lib/forms/AddNewCombatten.svelte";
     import AddEncounterCombatten from "../../../lib/forms/AddEncounterCombatten.svelte";
     import FabButton from "../../../lib/FabButton.svelte";
     
-    const { id = "" } = $props();
-    let encounterId = $state(parseInt(id));
-    let encounter = $state<Encounter>({
-        name: "",
-        id: 0,
-        campaign_id: 0,
-        combattens: []
-    });
-    let combattens = $state([] as Combatten[]);
-    let showMenu = $state(false);
-    let showCombattenMenu = $state(false);
-    let showNewCombattenMenu = $state(false);
+    const { data }: PageProps = $props();
+    let encounterId = $state(parseInt($page.params.id));
+    let encounter = $state<Encounter>(data.encounter);
+    let combattens = $state(data.encounter.combattens);
+    let menuDialog = $state<HTMLDialogElement | null>(null);
+    let addCombattenDialog = $state<HTMLDialogElement | null>(null);
+    let addNewCombattenDialog = $state<HTMLDialogElement | null>(null);
     let visibleTab = $state("combattens");
     
     async function getEncounter(id: number) {
         encounter = await invoke("get_encounter", { id: id });
         combattens = encounter.combattens;
     }
-
-    getEncounter(encounterId);
+    
     async function combattenRemoved() {
         getEncounter(encounterId);
     }
+    
     function toggleMenu() {
-        console.log("toggleMenu")
-        showMenu = !showMenu
+        menuDialog?.showModal();
     }
+    
     function showAddNewCombattenMenu() {
-        showMenu = false
-        showNewCombattenMenu = true
+        menuDialog?.close();
+        addNewCombattenDialog?.showModal();
     }
+    
     function showAddCombattenMenu() {
-        showMenu = false
-        showCombattenMenu = true
+        menuDialog?.close();
+        addCombattenDialog?.showModal();
     }
 </script>
 
 <div class="cyberpunk-container">
     <div class="cyberpunk-header">
-        <h2 class="header-title">Encounter: {encounter.name}</h2>
+        <div class="flex items-center">
+            <a href={"/campaign/" + encounter.campaign_id} class="cyberpunk-btn return mr-3" aria-label="Return">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <h2 class="header-title">Encounter: {encounter.name}</h2>
+        </div>
         <button 
             class="cyberpunk-btn edit"
             onclick={() => {
@@ -57,6 +60,7 @@
                 // For now, just a placeholder
                 alert('Edit encounter: ' + encounter.name);
             }}
+            aria-label="Edit"
         >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -113,77 +117,74 @@
     </div>
 </div>
 
-<!-- Menu Options -->
-{#if showMenu}
-    <div class="menu-overlay" transition:slide={{ delay: 100, duration: 250, axis: "y", easing: sineInOut }}>
-        <div class="menu-content">
-            <h3 class="text-lg font-bold mb-4">Add Combatant</h3>
-            <div class="flex flex-col gap-3">
-                <button 
-                    class="btn btn-primary" 
-                    onclick={showAddNewCombattenMenu}
-                >
-                    Create New NPC
-                </button>
-                <button 
-                    class="btn btn-secondary" 
-                    onclick={showAddCombattenMenu}
-                >
-                    Add Existing NPC
-                </button>
-                <button 
-                    class="btn btn-outline mt-2" 
-                    onclick={toggleMenu}
-                >
-                    Cancel
-                </button>
-            </div>
+<!-- Menu Options Dialog -->
+<dialog class="modal cyberpunk-modal" bind:this={menuDialog}>
+    <div class="modal-box cyberpunk-dialog-content">
+        <h3 class="text-lg font-bold mb-4">Add Combatant</h3>
+        <div class="flex flex-col gap-3">
+            <button 
+                class="btn btn-primary" 
+                onclick={showAddNewCombattenMenu}
+            >
+                Create New NPC
+            </button>
+            <button 
+                class="btn btn-secondary" 
+                onclick={showAddCombattenMenu}
+            >
+                Add Existing NPC
+            </button>
+            <button 
+                class="btn btn-outline mt-2" 
+                onclick={() => menuDialog?.close()}
+            >
+                Cancel
+            </button>
         </div>
     </div>
-{/if}
+</dialog>
 
-<!-- Form for adding a new combatant -->
-{#if showNewCombattenMenu}
-    <div class="modal-overlay" transition:slide={{ delay: 100, duration: 250, axis: "y", easing: sineInOut }}>
-        <div class="modal-content">
-            <h3 class="text-lg font-bold mb-4">Create New NPC</h3>
-            <AddNewCombatten 
-                on:combattenAdded={combattenRemoved} 
-                encounterId={encounterId} 
-                campaignId={encounter.campaign_id} 
-            />
-            <div class="flex justify-end mt-4">
-                <button 
-                    class="btn btn-outline" 
-                    onclick={() => showNewCombattenMenu = false}
-                >
-                    Cancel
-                </button>
-            </div>
+<!-- Dialog for adding a new combatant -->
+<dialog class="modal cyberpunk-modal" bind:this={addNewCombattenDialog}>
+    <div class="modal-box cyberpunk-dialog-content">
+        <h3 class="text-lg font-bold mb-4">Create New NPC</h3>
+        <AddNewCombatten 
+            onSave={() => {
+                combattenRemoved();
+                addNewCombattenDialog?.close();
+            }} 
+            encounterId={encounterId} 
+            campaignId={encounter.campaign_id} 
+        />
+        <div class="flex justify-end mt-4">
+            <button 
+                class="btn btn-outline" 
+                onclick={() => addNewCombattenDialog?.close()}
+            >
+                Cancel
+            </button>
         </div>
     </div>
-{/if}
+</dialog>
 
-<!-- Form for adding an existing combatant -->
-{#if showCombattenMenu}
-    <div class="modal-overlay" transition:slide={{ delay: 100, duration: 250, axis: "y", easing: sineInOut }}>
-        <div class="modal-content">
-            <h3 class="text-lg font-bold mb-4">Add Existing NPC</h3>
-            <AddEncounterCombatten 
-                campaign_id={encounter.campaign_id} 
-                encounter_id={encounterId} 
-            />
-            <div class="flex justify-end mt-4">
-                <button 
-                    class="btn btn-outline" 
-                    onclick={() => showCombattenMenu = false}
-                >
-                    Cancel
-                </button>
-            </div>
+<!-- Dialog for adding an existing combatant -->
+<dialog class="modal cyberpunk-modal" bind:this={addCombattenDialog}>
+    <div class="modal-box cyberpunk-dialog-content">
+        <h3 class="text-lg font-bold mb-4">Add Existing NPC</h3>
+        <AddEncounterCombatten 
+            campaign_id={encounter.campaign_id} 
+            encounter_id={encounterId} 
+        />
+        <div class="flex justify-end mt-4">
+            <button 
+                class="btn btn-outline" 
+                onclick={() => addCombattenDialog?.close()}
+            >
+                Cancel
+            </button>
         </div>
     </div>
-{/if}
+</dialog>
 
 <style>
     .cyberpunk-container {
@@ -198,25 +199,10 @@
         justify-content: space-between;
         align-items: center;
         padding: 1rem;
-        background-color: #0a0a0a;
         border-bottom: 1px solid #00f3ff;
         margin-bottom: 1rem;
         position: relative;
         overflow: hidden;
-    }
-
-    .cyberpunk-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            rgba(0, 243, 255, 0.1) 0%, 
-            rgba(0, 0, 0, 0) 50%,
-            rgba(255, 0, 255, 0.1) 100%);
-        z-index: 0;
     }
 
     .header-title {
@@ -306,34 +292,56 @@
         letter-spacing: 1px;
     }
 
-    /* Cyberpunk Modal Styling */
-    .menu-overlay, .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
+    /* Cyberpunk Dialog Styling */
+    dialog.cyberpunk-modal::backdrop {
         background-color: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 30;
         backdrop-filter: blur(3px);
     }
 
-    .menu-content, .modal-content {
+    dialog.cyberpunk-modal .modal-box {
         background-color: #0a0a0a;
         color: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        width: 90%;
-        max-width: 500px;
         border: 1px solid #00f3ff;
         box-shadow: 0 0 15px rgba(0, 243, 255, 0.5);
+        animation: cyberpunk-glow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes cyberpunk-glow {
+        from {
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+        to {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), 0 0 30px rgba(255, 0, 255, 0.3);
+        }
+    }
+
+    .cyberpunk-dialog-content {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cyberpunk-dialog-content::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        height: 2px;
+        background: linear-gradient(90deg, #ff00ff, #00f3ff);
+        animation: cyberpunk-scan 2s linear infinite;
+    }
+
+    @keyframes cyberpunk-scan {
+        0% {
+            transform: translateY(0);
+        }
+        100% {
+            transform: translateY(calc(100% + 4px));
+        }
     }
 
     /* Cyberpunk Button Styling */
-    :global(.menu-content .btn, .modal-content .btn) {
+    :global(dialog.cyberpunk-modal .btn) {
         background-color: transparent;
         border: 1px solid #00f3ff;
         color: #00f3ff;
@@ -341,41 +349,60 @@
         letter-spacing: 1px;
         position: relative;
         overflow: hidden;
+        transition: all 0.3s ease;
     }
 
-    :global(.menu-content .btn-primary, .modal-content .btn-primary) {
+    :global(dialog.cyberpunk-modal .btn::before) {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+        transition: all 0.5s ease;
+    }
+
+    :global(dialog.cyberpunk-modal .btn:hover::before) {
+        left: 100%;
+    }
+
+    :global(dialog.cyberpunk-modal .btn-primary) {
         background-color: #00f3ff;
         color: #0a0a0a;
     }
 
-    :global(.menu-content .btn-secondary, .modal-content .btn-secondary) {
+    :global(dialog.cyberpunk-modal .btn-secondary) {
         background-color: #ff00ff;
         border-color: #ff00ff;
         color: #0a0a0a;
     }
 
-    :global(.menu-content .btn:hover, .modal-content .btn:hover) {
+    :global(dialog.cyberpunk-modal .btn:hover) {
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+        transform: translateY(-2px);
+    }
+
+    :global(dialog.cyberpunk-modal .btn-primary:hover) {
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
     }
 
-    :global(.menu-content .btn-primary:hover, .modal-content .btn-primary:hover) {
-        box-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
-    }
-
-    :global(.menu-content .btn-secondary:hover, .modal-content .btn-secondary:hover) {
+    :global(dialog.cyberpunk-modal .btn-secondary:hover) {
         box-shadow: 0 0 10px rgba(255, 0, 255, 0.7);
     }
 
     /* Cyberpunk Input Styling */
-    :global(.modal-content input) {
+    :global(dialog.cyberpunk-modal input) {
         background-color: #1a1a1a;
         border: 1px solid #00f3ff;
         color: white;
+        transition: all 0.3s ease;
     }
 
-    :global(.modal-content input:focus) {
+    :global(dialog.cyberpunk-modal input:focus) {
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
         outline: none;
+        border-color: #ff00ff;
     }
 
     .cyberpunk-btn {
@@ -392,12 +419,12 @@
         z-index: 1;
     }
 
-    .cyberpunk-btn.edit {
+    .cyberpunk-btn.edit, .cyberpunk-btn.return {
         border-color: #00f3ff;
         color: #00f3ff;
     }
 
-    .cyberpunk-btn.edit:hover {
+    .cyberpunk-btn.edit:hover, .cyberpunk-btn.return:hover {
         background-color: rgba(0, 243, 255, 0.1);
         box-shadow: 0 0 8px rgba(0, 243, 255, 0.5);
     }

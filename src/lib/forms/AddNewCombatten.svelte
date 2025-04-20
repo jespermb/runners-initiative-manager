@@ -1,10 +1,7 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { createEventDispatcher } from "svelte";
     import type { Combatten } from "../../types/Combatten";
     import { z } from "zod";
-
-    const dispatch = createEventDispatcher();
 
     let name = $state("");
     let initiative = $state(0);
@@ -12,11 +9,10 @@
     let stun = $state(0);
     let greetMsg = $state("");
 
-    const { campaignId = 0, encounterId = 0 } = $props();
+    const { campaignId = 0, encounterId = 0, onSave } = $props();
 
     const schema = z.object({
         name: z.string().min(2, { message: "Name must be at least 2 characters long" }),
-        initiative: z.number().int().min(1, { message: "Initiative must be a positive number" }),
         physical: z.number().int().min(1, { message: "Physical health must be a positive number" }),
         stun: z.number().int().min(1, { message: "Stun health must be a positive number" }),
     })
@@ -34,7 +30,8 @@
         stun: [],
     });
 
-    async function save() {
+    async function save(evt: Event) {
+        evt.preventDefault();
         // Learn more about Tauri commands at https://tauri.app/v2/guide/command
         const phys = parseInt(`${physical}`);
         const stn = parseInt(`${stun}`);
@@ -56,12 +53,12 @@
         initiative = 0;
         physical = 0;
         stun = 0;
-        dispatch("combattenAdded");
+        onSave(combatten);
     }
 </script>
 
 <div class="">
-    <form class="flex gap-3 flex-col" on:submit|preventDefault={save}>
+    <form class="flex gap-3 flex-col" onsubmit={save}>
         <label for="name">Name</label>
         <input
             name="name"
@@ -72,18 +69,6 @@
         />
         {#if errors.name && errors.name?.length > 0}
             <p class="text-error">{errors.name?.[0]}</p>
-        {/if}
-        <label for="initiative">Initiative</label>
-        <input
-            name="initiative"
-            id="combatten-initiative"
-            placeholder="Enter initiative"
-            bind:value={initiative}
-            type="number"
-            class={`input input-bordered w-full ${errors.initiative && errors.initiative?.length > 0 ? " input-error" : ""}`}
-        />
-        {#if errors.initiative && errors.initiative?.length > 0}
-            <p class="text-error">{errors.initiative?.[0]}</p>
         {/if}
         <label for="physical">Physical health</label>
         <input

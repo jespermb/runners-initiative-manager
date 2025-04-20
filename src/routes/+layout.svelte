@@ -80,9 +80,10 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(45deg, 
-          rgba(0, 243, 255, 0.05) 0%, 
-          rgba(0, 0, 0, 0) 70%);
+      background: linear-gradient(90deg, 
+          rgba(0, 243, 255, 0.1) 0%, 
+          rgba(0, 0, 0, 0) 50%,
+          rgba(255, 0, 255, 0.1) 100%);
       z-index: 0;
       pointer-events: none;
   }

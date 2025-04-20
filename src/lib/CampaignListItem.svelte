@@ -40,7 +40,6 @@
         justify-content: space-between;
         align-items: center;
         padding: 0.75rem 1rem;
-        background-color: #0a0a0a;
         color: white;
         border-radius: 0.25rem;
         margin-bottom: 0.75rem;
@@ -63,9 +62,6 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, 
-            rgba(0, 243, 255, 0.1) 0%, 
-            rgba(0, 0, 0, 0) 20%);
         z-index: 0;
     }
 

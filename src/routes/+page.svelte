@@ -1,6 +1,5 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/core";
-    import { link } from "svelte-spa-router";
     import PageLayout from "../lib/layout/PageLayout.svelte";
     import CampaignListItem from "../lib/CampaignListItem.svelte";
     import FabButton from "../lib/FabButton.svelte";
@@ -9,32 +8,7 @@
 
     let campaigns = $state([] as Campaign[]);
     let showAddForm = $state(false);
-    let isTauriAvailable = $state(false);
-    let isLoading = $state(true);
-
-    // Check if Tauri is available
-    async function checkTauriAvailability() {
-        try {
-            // Try to access the window.__TAURI__ object
-            isTauriAvailable = typeof window !== 'undefined' && 'Tauri' in window;
-            if (isTauriAvailable) {
-                await getCampaigns();
-            } else {
-                // If Tauri is not available, use mock data for development
-                campaigns = [];
-            }
-        } catch (error) {
-            console.error("Error checking Tauri availability:", error);
-            isTauriAvailable = false;
-            // Use mock data
-            campaigns = [];
-        } finally {
-            isLoading = false;
-        }
-    }
-
     async function getCampaigns() {
-        if (!isTauriAvailable) return;
         try {
             // Learn more about Tauri commands at https://tauri.app/v2/guide/command
             campaigns = await invoke("get_all_campaigns");
@@ -45,14 +19,6 @@
     
     // Mock implementation of add_campaign for browser mode
     async function addCampaign(name: string, version: number) {
-        if (!isTauriAvailable) {
-            // Generate a unique ID (in a real app, this would be handled by the backend)
-            const newId = Math.max(0, ...campaigns.map(c => c.id)) + 1;
-            // Add the new campaign to the array
-            campaigns = [...campaigns, { id: newId, name, version }];
-            return `Added campaign "${name}"`;
-        }
-        
         try {
             return await invoke("add_campaign", { name, version });
         } catch (error) {
@@ -62,12 +28,6 @@
     }
 
     async function removeCampaign(id: number) {
-        if (!isTauriAvailable) {
-            // In browser mode, just filter out the campaign
-            campaigns = campaigns.filter(c => c.id !== id);
-            return;
-        }
-        
         try {
             // Learn more about Tauri commands at https://tauri.app/v2/guide/command
             await invoke("remove_campaign", { id });
@@ -82,7 +42,7 @@
     }
 
     // Initialize
-    checkTauriAvailability();
+    getCampaigns();
 </script>
 
 <PageLayout>
@@ -96,7 +56,6 @@
                 <a 
                     class="campaign-link"
                     href={"/campaign/" + campaign.id}
-                    use:link
                 >
                     <CampaignListItem 
                         {campaign} 
@@ -118,24 +77,15 @@
         <div class="modal-content">
             <h3 class="text-lg font-bold mb-4">Add New Campaign</h3>
             <AddCampaign 
-                on:campaignAdded={async (event) => {
-                    if (!isTauriAvailable) {
-                        // If we're in browser mode, we need to manually add the campaign
-                        // Extract the name and version from the event if available, or use defaults
-                        const name = event.detail?.name || "New Campaign";
-                        const version = event.detail?.version || 6;
-                        await addCampaign(name, version);
-                    } else {
-                        // In Tauri mode, the campaign was already added by the AddCampaign component
-                        await getCampaigns();
-                    }
+                on:campaignAdded={async () => {
+                    await getCampaigns();
                     showAddForm = false;
                 }} 
             />
             <div class="flex justify-end mt-4">
                 <button 
                     class="btn btn-outline" 
-                    on:click={() => showAddForm = false}
+                    onclick={() => showAddForm = false}
                 >
                     Cancel
                 </button>

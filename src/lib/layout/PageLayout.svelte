@@ -37,25 +37,10 @@
         justify-content: space-between;
         align-items: center;
         padding: 1rem;
-        background-color: #0a0a0a;
         border-bottom: 1px solid #00f3ff;
         margin-bottom: 1rem;
         position: relative;
         overflow: hidden;
-    }
-
-    .cyberpunk-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-            rgba(0, 243, 255, 0.1) 0%, 
-            rgba(0, 0, 0, 0) 50%,
-            rgba(255, 0, 255, 0.1) 100%);
-        z-index: 0;
     }
 
     .content-container {
