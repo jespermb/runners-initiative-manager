@@ -1,17 +1,17 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
-    const { name = "" } = $props<{ name: string }>();
+    const { name = "", displayName = name } = $props<{ name: string; displayName?: string }>();
 
     function edit() {
         dispatch("edit");
     }
 
     function remove() {
-        // Show confirmation dialog
-        if (confirm(`Are you sure you want to remove "${name}"?`)) {
-            dispatch("remove");
-        }
+        console.log("ListItem remove clicked for:", name);
+        // Temporarily skip confirmation dialog for debugging
+        console.log("Dispatching remove event");
+        dispatch("remove");
     }
 </script>
 

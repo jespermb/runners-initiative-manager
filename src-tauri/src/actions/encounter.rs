@@ -161,3 +161,27 @@ pub async fn add_combatten_to_encounter(
 
     Ok(format!("Combatten {} added to encounter {}", combatten_id, encounter_id))
 }
+
+#[tauri::command]
+pub async fn remove_combatten_from_encounter(
+    state: State<'_, DbPool>,
+    encounter_id: i32,
+    combatten_id: i32,
+) -> Result<String, String> {
+    let conn = state.get().map_err(|e| e.to_string())?;
+    let mut statement = conn
+        .prepare(
+            "DELETE FROM encounter_combattens 
+             WHERE encounter_id = @encounter_id AND combatten_id = @combatten_id"
+        )
+        .map_err(|e| e.to_string())?;
+    
+    statement
+        .execute(named_params! {
+            "@encounter_id": encounter_id,
+            "@combatten_id": combatten_id
+        })
+        .map_err(|e| e.to_string())?;
+
+    Ok(format!("Combatten {} removed from encounter {}", combatten_id, encounter_id))
+}

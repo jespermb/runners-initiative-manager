@@ -4,14 +4,24 @@
     import ListItem from "./ListItem.svelte";
     const dispatch = createEventDispatcher();
 
-    const { name = "", id = 0, initiative = null } = $props();
+    const { name = "", id = 0, initiative = null, combatten_type = "npc", encounter_id = 0 } = $props();
     let resultMsg = $state("");
     let showEditForm = $state(false);
     let editName = $state(name);
 
     async function remove() {
-        resultMsg = await invoke("remove_combatten", { id });
-        dispatch("combattenRemoved");
+        console.log("Remove function called with:", { encounterId: encounter_id, combattenId: id });
+        try {
+            resultMsg = await invoke("remove_combatten_from_encounter", { 
+                encounterId: encounter_id, 
+                combattenId: id 
+            });
+            console.log("Remove result:", resultMsg);
+            dispatch("combattenRemoved");
+        } catch (error) {
+            console.error("Remove error:", error);
+            resultMsg = `Error: ${error}`;
+        }
     }
 
     function edit() {
@@ -32,7 +42,37 @@
     }
 </script>
 
-<ListItem name={initiative !== null ? `${initiative} - ${name}` : name} on:remove={remove} on:edit={edit} />
+<div class="combatten-wrapper {combatten_type === 'pc' ? 'pc-type' : 'npc-type'}">
+    <ListItem 
+        name={initiative !== null ? `${initiative} - ${name}` : name} 
+        displayName={name}
+        on:remove={remove} 
+        on:edit={edit} 
+    />
+</div>
+
+<style>
+    .combatten-wrapper :global(.cyberpunk-item) {
+        border-left-color: var(--border-color);
+        box-shadow: 0 0 10px var(--glow-color);
+    }
+
+    .combatten-wrapper :global(.cyberpunk-item::before) {
+        background: linear-gradient(90deg, 
+            var(--glow-color) 0%, 
+            rgba(0, 0, 0, 0) 20%);
+    }
+
+    .pc-type {
+        --border-color: #00f3ff;
+        --glow-color: rgba(0, 243, 255, 0.2);
+    }
+
+    .npc-type {
+        --border-color: #ef4444;
+        --glow-color: rgba(239, 68, 68, 0.2);
+    }
+</style>
 
 <!-- This would be the edit form implementation
 {#if showEditForm}

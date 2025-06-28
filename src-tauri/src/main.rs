@@ -43,7 +43,8 @@ fn main() {
             encounter::get_all_encounters,
             encounter::get_encounter,
             encounter::remove_encounter,
-            encounter::add_combatten_to_encounter
+            encounter::add_combatten_to_encounter,
+            encounter::remove_combatten_from_encounter
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

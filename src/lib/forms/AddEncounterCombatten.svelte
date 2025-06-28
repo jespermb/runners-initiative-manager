@@ -8,9 +8,10 @@
         encounter_id?: number;
         oncombattenAdded?: (combatten: Combatten) => void;
         onclose?: () => void;
+        existingCombattens?: number[];
     }
     
-    const { campaign_id = 0, encounter_id = 0, oncombattenAdded, onclose }: Props = $props();
+    const { campaign_id = 0, encounter_id = 0, oncombattenAdded, onclose, existingCombattens = [] }: Props = $props();
     
     // Form state
     let currentStep = $state(1); // Step 1: Select/Create combatant, Step 2: Set initiative
@@ -56,13 +57,19 @@
     
     let errors = $state<ValidationErrors>({});
 
-    // Filter combattens based on search query
+    // Filter combattens based on search query and exclude already added PCs (but allow NPCs to be re-added)
     $effect(() => {
+        // First filter out only PCs that are already in the encounter (allow NPCs to be re-added)
+        const availableCombattens = combattens.filter(c => 
+            !(existingCombattens.includes(c.id) && c.combatten_type === 'pc')
+        );
+        
+        // Then filter by search query
         if (searchQuery.trim() === "") {
-            filteredCombattens = combattens;
+            filteredCombattens = availableCombattens;
         } else {
             const query = searchQuery.toLowerCase();
-            filteredCombattens = combattens.filter(c => 
+            filteredCombattens = availableCombattens.filter(c => 
                 c.name.toLowerCase().includes(query)
             );
         }
@@ -103,7 +110,7 @@
             // Add new combatant
             const combatten: Combatten = await invoke("add_combatten", { 
                 name, 
-                combattenType: combatantType,
+                combatten_type: combatantType,
                 physical: parseInt(`${physical}`), 
                 stun: parseInt(`${stun}`), 
                 campaignId: campaign_id 
@@ -611,7 +618,7 @@
                     <span class="font-semibold">Type:</span> 
                     {addType === "new" 
                         ? (combatantType === "pc" ? "PC" : "NPC") 
-                        : (selectedCombatten?.combattenType === "pc" ? "PC" : "NPC")
+                        : (selectedCombatten?.combatten_type === "pc" ? "PC" : "NPC")
                     }
                 </p>
                 {#if addType === "new"}

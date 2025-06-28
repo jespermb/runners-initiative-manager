@@ -20,6 +20,7 @@
     async function getEncounter(id: number) {
         encounter = await invoke("get_encounter", { id: id });
         combattens = encounter.combattens;
+        console.log("Loaded combattens:", combattens);
     }
     
     async function combattenRemoved() {
@@ -64,6 +65,8 @@
                         name={combatten.name}
                         id={combatten.id}
                         initiative={combatten.initiative}
+                        combatten_type={combatten.combatten_type}
+                        encounter_id={encounterId}
                         on:combattenRemoved={combattenRemoved}
                     />
                 {/each}
@@ -113,6 +116,7 @@
         <AddEncounterCombatten 
             campaign_id={encounter.campaign_id} 
             encounter_id={encounterId}
+            existingCombattens={combattens.map(c => c.id)}
             oncombattenAdded={() => {
                 combattenRemoved();
                 addCombattenDialog?.close();
