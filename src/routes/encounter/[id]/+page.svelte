@@ -66,6 +66,8 @@
                         id={combatten.id}
                         initiative={combatten.initiative}
                         combatten_type={combatten.combatten_type}
+                        physical={combatten.physical}
+                        stun={combatten.stun}
                         encounter_id={encounterId}
                         on:combattenRemoved={combattenRemoved}
                     />

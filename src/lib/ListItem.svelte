@@ -1,7 +1,12 @@
 <script lang="ts">
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
-    const { name = "", displayName = name } = $props<{ name: string; displayName?: string }>();
+    const { name = "", displayName = name, physical, stun } = $props<{ 
+        name: string; 
+        displayName?: string; 
+        physical?: number; 
+        stun?: number; 
+    }>();
 
     function edit() {
         dispatch("edit");
@@ -18,6 +23,26 @@
 <div class="cyberpunk-item">
     <div class="item-content">
         <h2 class="item-name">{name}</h2>
+        {#if physical !== undefined && stun !== undefined}
+            <div class="health-indicators">
+                <div class="health-row">
+                    <span class="health-label">PHY:</span>
+                    <div class="health-squares">
+                        {#each Array(physical) as _, i}
+                            <div class="health-square physical"></div>
+                        {/each}
+                    </div>
+                </div>
+                <div class="health-row">
+                    <span class="health-label">STN:</span>
+                    <div class="health-squares">
+                        {#each Array(stun) as _, i}
+                            <div class="health-square stun"></div>
+                        {/each}
+                    </div>
+                </div>
+            </div>
+        {/if}
     </div>
     <div class="item-actions">
         <button 
@@ -80,12 +105,59 @@
     .item-name {
         font-size: 1rem;
         font-weight: 500;
-        margin: 0;
+        margin: 0 0 0.25rem 0;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+    }
+
+    .health-indicators {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .health-row {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .health-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: #c0c0c0;
+        min-width: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .health-squares {
+        display: flex;
+        gap: 0.125rem;
+        flex-wrap: wrap;
+    }
+
+    .health-square {
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 0.125rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        position: relative;
+    }
+
+    .health-square.physical {
+        background-color: #ef4444;
+        border-color: #dc2626;
+        box-shadow: 0 0 3px rgba(239, 68, 68, 0.5);
+    }
+
+    .health-square.stun {
+        background-color: #3b82f6;
+        border-color: #2563eb;
+        box-shadow: 0 0 3px rgba(59, 130, 246, 0.5);
     }
 
     .item-actions {

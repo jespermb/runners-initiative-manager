@@ -2,63 +2,45 @@
     import { invoke } from "@tauri-apps/api/core";
     import { createEventDispatcher } from "svelte";
     import ListItem from "./ListItem.svelte";
+    import EditCombattentModal from "./forms/EditCombattentModal.svelte";
+    import type { Combatten } from "../types/Combatten";
     const dispatch = createEventDispatcher();
 
-    const { name = "", id = 0 } = $props();
+    const { combatten }: { combatten: Combatten } = $props();
     let resultMsg = $state("");
-    let showEditForm = $state(false);
-    let editName = $state(name);
+    let showEditModal = $state(false);
 
     async function remove() {
-        resultMsg = await invoke("remove_combatten", { id });
+        resultMsg = await invoke("remove_combatten", { id: combatten.id });
         dispatch("combattenRemoved");
     }
 
     function edit() {
-        // For now, just show an alert
-        // In a real implementation, this would open an edit form
-        alert(`Edit player: ${name} (ID: ${id})`);
-        
-        // Example of how you might implement editing:
-        // showEditForm = true;
-        // editName = name;
+        showEditModal = true;
     }
 
-    async function saveEdit() {
-        // This would be implemented to save the edited combatten
-        // await invoke("update_combatten", { id, name: editName });
-        // showEditForm = false;
-        // dispatch("combattenUpdated");
+    function handleEditClose() {
+        showEditModal = false;
+    }
+
+    function handleEditSaved() {
+        // Refresh the campaign to show updated combatten
+        dispatch("combattenRemoved"); // Reusing this event to trigger refresh
     }
 </script>
 
-<ListItem {name} on:remove={remove} on:edit={edit} />
+<ListItem 
+    name={combatten.name} 
+    physical={combatten.physical} 
+    stun={combatten.stun} 
+    on:remove={remove} 
+    on:edit={edit} 
+/>
 
-<!-- This would be the edit form implementation
-{#if showEditForm}
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="text-lg font-bold mb-4">Edit Player</h3>
-            <input
-                type="text"
-                bind:value={editName}
-                class="input input-bordered w-full mb-4"
-            />
-            <div class="flex justify-between">
-                <button 
-                    class="btn btn-outline" 
-                    onclick={() => (showEditForm = false)}
-                >
-                    Cancel
-                </button>
-                <button 
-                    class="btn btn-primary" 
-                    onclick={saveEdit}
-                >
-                    Save
-                </button>
-            </div>
-        </div>
-    </div>
-{/if}
--->
+<EditCombattentModal
+    {combatten}
+    isOpen={showEditModal}
+    onClose={handleEditClose}
+    onSaved={handleEditSaved}
+/>
+

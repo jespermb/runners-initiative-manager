@@ -2,12 +2,12 @@
     import { invoke } from "@tauri-apps/api/core";
     import { createEventDispatcher } from "svelte";
     import ListItem from "./ListItem.svelte";
+    import EditInitiativeModal from "./forms/EditInitiativeModal.svelte";
     const dispatch = createEventDispatcher();
 
-    const { name = "", id = 0, initiative = null, combatten_type = "npc", encounter_id = 0 } = $props();
+    const { name = "", id = 0, initiative = null, combatten_type = "npc", encounter_id = 0, physical = 0, stun = 0 } = $props();
     let resultMsg = $state("");
-    let showEditForm = $state(false);
-    let editName = $state(name);
+    let showEditModal = $state(false);
 
     async function remove() {
         console.log("Remove function called with:", { encounterId: encounter_id, combattenId: id });
@@ -25,20 +25,16 @@
     }
 
     function edit() {
-        // For now, just show an alert
-        // In a real implementation, this would open an edit form
-        alert(`Edit NPC: ${name} (ID: ${id})`);
-        
-        // Example of how you might implement editing:
-        // showEditForm = true;
-        // editName = name;
+        showEditModal = true;
     }
 
-    async function saveEdit() {
-        // This would be implemented to save the edited NPC
-        // await invoke("update_combatten", { id, name: editName });
-        // showEditForm = false;
-        // dispatch("combattenUpdated");
+    function handleEditClose() {
+        showEditModal = false;
+    }
+
+    function handleEditSaved() {
+        // Refresh the encounter to show updated initiative
+        dispatch("combattenRemoved"); // Reusing this event to trigger refresh
     }
 </script>
 
@@ -46,10 +42,22 @@
     <ListItem 
         name={initiative !== null ? `${initiative} - ${name}` : name} 
         displayName={name}
+        {physical}
+        {stun}
         on:remove={remove} 
         on:edit={edit} 
     />
 </div>
+
+<EditInitiativeModal
+    combattenId={id}
+    combattenName={name}
+    currentInitiative={initiative || 0}
+    encounterId={encounter_id}
+    isOpen={showEditModal}
+    onClose={handleEditClose}
+    onSaved={handleEditSaved}
+/>
 
 <style>
     .combatten-wrapper :global(.cyberpunk-item) {
@@ -74,31 +82,3 @@
     }
 </style>
 
-<!-- This would be the edit form implementation
-{#if showEditForm}
-    <div class="modal-overlay">
-        <div class="modal-content">
-            <h3 class="text-lg font-bold mb-4">Edit NPC</h3>
-            <input
-                type="text"
-                bind:value={editName}
-                class="input input-bordered w-full mb-4"
-            />
-            <div class="flex justify-between">
-                <button 
-                    class="btn btn-outline" 
-                    onclick={() => (showEditForm = false)}
-                >
-                    Cancel
-                </button>
-                <button 
-                    class="btn btn-primary" 
-                    onclick={saveEdit}
-                >
-                    Save
-                </button>
-            </div>
-        </div>
-    </div>
-{/if}
--->

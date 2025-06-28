@@ -136,6 +136,7 @@ declare module '$env/static/private' {
 	export const INFOPATH: string;
 	export const npm_package_dependencies_svelte_spa_router: string;
 	export const e10: string;
+	export const e11: string;
 	export const gs_max_changes: string;
 	export const _git_cmd: string;
 	export const SECURITYSESSIONID: string;
@@ -285,6 +286,7 @@ declare module '$env/dynamic/private' {
 		INFOPATH: string;
 		npm_package_dependencies_svelte_spa_router: string;
 		e10: string;
+		e11: string;
 		gs_max_changes: string;
 		_git_cmd: string;
 		SECURITYSESSIONID: string;

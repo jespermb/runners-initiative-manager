@@ -14,6 +14,8 @@ pub struct EncounterCombatten {
     pub combatten_type: String,
     pub campaign_id: i32,
     pub initiative: Option<i32>,
+    pub physical: i32,
+    pub stun: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, TS)]
@@ -94,9 +96,9 @@ pub async fn get_encounter(state: State<'_, DbPool>, id: i32) -> Result<Encounte
     // Get associated combattens ordered by initiative (desc)
     let mut comb_statement = conn
         .prepare(
-            "SELECT c.id, c.name, c.type, c.campaign_id, ce.initiative 
+            "SELECT c.id, c.name, c.type, c.campaign_id, ce.initiative, c.physical, c.stun 
             FROM encounter_combattens ce 
-            LEFT JOIN combattens c ON (c.id = ce.combatten_id) 
+            INNER JOIN combattens c ON (c.id = ce.combatten_id) 
             WHERE ce.encounter_id = @id
             ORDER BY ce.initiative DESC"
         )
@@ -110,6 +112,8 @@ pub async fn get_encounter(state: State<'_, DbPool>, id: i32) -> Result<Encounte
                 combatten_type: row.get(2)?,
                 campaign_id: row.get(3)?,
                 initiative: row.get(4)?,
+                physical: row.get(5)?,
+                stun: row.get(6)?,
             })
         })
         .map_err(|e| e.to_string())?;
