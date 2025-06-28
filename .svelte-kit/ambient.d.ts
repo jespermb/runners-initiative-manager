@@ -33,7 +33,6 @@ declare module '$env/static/private' {
 	export const TERM_PROGRAM: string;
 	export const npm_package_scripts_tauri: string;
 	export const NODE: string;
-	export const project_design_dir: string;
 	export const INIT_CWD: string;
 	export const NVM_CD_FLAGS: string;
 	export const npm_package_devDependencies_typescript: string;
@@ -42,7 +41,6 @@ declare module '$env/static/private' {
 	export const npm_package_devDependencies_vite: string;
 	export const HOMEBREW_REPOSITORY: string;
 	export const TMPDIR: string;
-	export const design_ext_dirs: string;
 	export const ga_auto_remove: string;
 	export const TERM_PROGRAM_VERSION: string;
 	export const npm_package_scripts_tailwind_watch: string;
@@ -55,6 +53,7 @@ declare module '$env/static/private' {
 	export const npm_package_devDependencies__sveltejs_kit: string;
 	export const npm_package_devDependencies_svelte_preprocess: string;
 	export const npm_config_registry: string;
+	export const PNPM_HOME: string;
 	export const ZSH: string;
 	export const NVM_DIR: string;
 	export const PHP_INI_SCAN_DIR: string;
@@ -74,14 +73,12 @@ declare module '$env/static/private' {
 	export const PAGER: string;
 	export const TAURI_ENV_PLATFORM: string;
 	export const VIRTUAL_ENV_DISABLE_PROMPT: string;
-	export const design_base_dirs: string;
 	export const npm_package_devDependencies_svelte: string;
 	export const npm_package_devDependencies__tailwindcss_postcss: string;
 	export const LSCOLORS: string;
 	export const git_status_command: string;
 	export const npm_config_frozen_lockfile: string;
 	export const PATH: string;
-	export const root_design_dir: string;
 	export const LaunchInstanceID: string;
 	export const TAURI_ENV_FAMILY: string;
 	export const TAURI_ENV_PLATFORM_VERSION: string;
@@ -100,7 +97,6 @@ declare module '$env/static/private' {
 	export const npm_package_scripts_build: string;
 	export const GIT_REPO_DIR: string;
 	export const XPC_FLAGS: string;
-	export const design_av_dirs: string;
 	export const TAURI_ENV_ARCH: string;
 	export const npm_config_node_gyp: string;
 	export const XPC_SERVICE_NAME: string;
@@ -176,7 +172,6 @@ declare module '$env/dynamic/private' {
 		TERM_PROGRAM: string;
 		npm_package_scripts_tauri: string;
 		NODE: string;
-		project_design_dir: string;
 		INIT_CWD: string;
 		NVM_CD_FLAGS: string;
 		npm_package_devDependencies_typescript: string;
@@ -185,7 +180,6 @@ declare module '$env/dynamic/private' {
 		npm_package_devDependencies_vite: string;
 		HOMEBREW_REPOSITORY: string;
 		TMPDIR: string;
-		design_ext_dirs: string;
 		ga_auto_remove: string;
 		TERM_PROGRAM_VERSION: string;
 		npm_package_scripts_tailwind_watch: string;
@@ -198,6 +192,7 @@ declare module '$env/dynamic/private' {
 		npm_package_devDependencies__sveltejs_kit: string;
 		npm_package_devDependencies_svelte_preprocess: string;
 		npm_config_registry: string;
+		PNPM_HOME: string;
 		ZSH: string;
 		NVM_DIR: string;
 		PHP_INI_SCAN_DIR: string;
@@ -217,14 +212,12 @@ declare module '$env/dynamic/private' {
 		PAGER: string;
 		TAURI_ENV_PLATFORM: string;
 		VIRTUAL_ENV_DISABLE_PROMPT: string;
-		design_base_dirs: string;
 		npm_package_devDependencies_svelte: string;
 		npm_package_devDependencies__tailwindcss_postcss: string;
 		LSCOLORS: string;
 		git_status_command: string;
 		npm_config_frozen_lockfile: string;
 		PATH: string;
-		root_design_dir: string;
 		LaunchInstanceID: string;
 		TAURI_ENV_FAMILY: string;
 		TAURI_ENV_PLATFORM_VERSION: string;
@@ -243,7 +236,6 @@ declare module '$env/dynamic/private' {
 		npm_package_scripts_build: string;
 		GIT_REPO_DIR: string;
 		XPC_FLAGS: string;
-		design_av_dirs: string;
 		TAURI_ENV_ARCH: string;
 		npm_config_node_gyp: string;
 		XPC_SERVICE_NAME: string;

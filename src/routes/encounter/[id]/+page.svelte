@@ -14,9 +14,7 @@
     let encounterId = $state(parseInt($page.params.id));
     let encounter = $state<Encounter>(data.encounter);
     let combattens = $state(data.encounter.combattens);
-    let menuDialog = $state<HTMLDialogElement | null>(null);
     let addCombattenDialog = $state<HTMLDialogElement | null>(null);
-    let addNewCombattenDialog = $state<HTMLDialogElement | null>(null);
     let visibleTab = $state("combattens");
     
     async function getEncounter(id: number) {
@@ -28,17 +26,7 @@
         getEncounter(encounterId);
     }
     
-    function toggleMenu() {
-        menuDialog?.showModal();
-    }
-    
-    function showAddNewCombattenMenu() {
-        menuDialog?.close();
-        addNewCombattenDialog?.showModal();
-    }
-    
-    function showAddCombattenMenu() {
-        menuDialog?.close();
+    function openAddCombatantDialog() {
         addCombattenDialog?.showModal();
     }
 </script>
@@ -75,6 +63,7 @@
                     <EncCombattenListItem
                         name={combatten.name}
                         id={combatten.id}
+                        initiative={combatten.initiative}
                         on:combattenRemoved={combattenRemoved}
                     />
                 {/each}
@@ -88,7 +77,7 @@
     </div>
 
     <!-- Floating Action Button -->
-    <FabButton onClick={toggleMenu} />
+    <FabButton onClick={openAddCombatantDialog} />
 
     <!-- Bottom Navigation -->
     <div class="cyberpunk-nav">
@@ -117,72 +106,19 @@
     </div>
 </div>
 
-<!-- Menu Options Dialog -->
-<dialog class="modal cyberpunk-modal" bind:this={menuDialog}>
-    <div class="modal-box cyberpunk-dialog-content">
-        <h3 class="text-lg font-bold mb-4">Add Combatant</h3>
-        <div class="flex flex-col gap-3">
-            <button 
-                class="btn btn-primary" 
-                onclick={showAddNewCombattenMenu}
-            >
-                Create New NPC
-            </button>
-            <button 
-                class="btn btn-secondary" 
-                onclick={showAddCombattenMenu}
-            >
-                Add Existing NPC
-            </button>
-            <button 
-                class="btn btn-outline mt-2" 
-                onclick={() => menuDialog?.close()}
-            >
-                Cancel
-            </button>
-        </div>
-    </div>
-</dialog>
 
-<!-- Dialog for adding a new combatant -->
-<dialog class="modal cyberpunk-modal" bind:this={addNewCombattenDialog}>
-    <div class="modal-box cyberpunk-dialog-content">
-        <h3 class="text-lg font-bold mb-4">Create New NPC</h3>
-        <AddNewCombatten 
-            onSave={() => {
-                combattenRemoved();
-                addNewCombattenDialog?.close();
-            }} 
-            encounterId={encounterId} 
-            campaignId={encounter.campaign_id} 
-        />
-        <div class="flex justify-end mt-4">
-            <button 
-                class="btn btn-outline" 
-                onclick={() => addNewCombattenDialog?.close()}
-            >
-                Cancel
-            </button>
-        </div>
-    </div>
-</dialog>
-
-<!-- Dialog for adding an existing combatant -->
+<!-- Dialog for adding a combatant -->
 <dialog class="modal cyberpunk-modal" bind:this={addCombattenDialog}>
-    <div class="modal-box cyberpunk-dialog-content">
-        <h3 class="text-lg font-bold mb-4">Add Existing NPC</h3>
+    <div class="modal-box cyberpunk-dialog-content max-w-xl h-[90vh] max-h-[600px]">
         <AddEncounterCombatten 
             campaign_id={encounter.campaign_id} 
-            encounter_id={encounterId} 
+            encounter_id={encounterId}
+            oncombattenAdded={() => {
+                combattenRemoved();
+                addCombattenDialog?.close();
+            }}
+            onclose={() => addCombattenDialog?.close()}
         />
-        <div class="flex justify-end mt-4">
-            <button 
-                class="btn btn-outline" 
-                onclick={() => addCombattenDialog?.close()}
-            >
-                Cancel
-            </button>
-        </div>
     </div>
 </dialog>
 

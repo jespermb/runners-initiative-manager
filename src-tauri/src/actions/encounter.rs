@@ -8,11 +8,21 @@ use super::combatten::Combatten;
 
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../src/types/")]
+pub struct EncounterCombatten {
+    pub id: i32,
+    pub name: String,
+    pub combatten_type: String,
+    pub campaign_id: i32,
+    pub initiative: Option<i32>,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../src/types/")]
 pub struct Encounter {
     pub id: i32,
     pub name: String,
     pub campaign_id: i32,
-    pub combattens: Vec<Combatten>,
+    pub combattens: Vec<EncounterCombatten>,
 }
 
 #[tauri::command]
@@ -81,22 +91,25 @@ pub async fn get_encounter(state: State<'_, DbPool>, id: i32) -> Result<Encounte
         })
         .map_err(|e| e.to_string())?;
     
-    // Get associated combattens
+    // Get associated combattens ordered by initiative (desc)
     let mut comb_statement = conn
         .prepare(
-            "SELECT c.id, c.name, c.campaign_id 
+            "SELECT c.id, c.name, c.type, c.campaign_id, ce.initiative 
             FROM encounter_combattens ce 
             LEFT JOIN combattens c ON (c.id = ce.combatten_id) 
-            WHERE ce.encounter_id = @id"
+            WHERE ce.encounter_id = @id
+            ORDER BY ce.initiative DESC"
         )
         .map_err(|e| e.to_string())?;
     
     let combattens_iter = comb_statement
         .query_map(named_params! { "@id": id }, |row| {
-            Ok(Combatten {
+            Ok(EncounterCombatten {
                 id: row.get(0)?,
                 name: row.get(1)?,
-                campaign_id: row.get(2)?,
+                combatten_type: row.get(2)?,
+                campaign_id: row.get(3)?,
+                initiative: row.get(4)?,
             })
         })
         .map_err(|e| e.to_string())?;

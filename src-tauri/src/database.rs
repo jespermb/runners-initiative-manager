@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 
 pub type DbPool = Pool<SqliteConnectionManager>;
 
-const CURRENT_DB_VERSION: u32 = 2;
+const CURRENT_DB_VERSION: u32 = 4;
 
 /// Initializes the database connection pool, creating the .sqlite file if needed, and upgrading the database
 /// if it's out of date.
@@ -64,6 +64,7 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
       CREATE TABLE combattens (
         id INTEGER PRIMARY KEY,
         name TEXT NOT NULL,
+        type TEXT NOT NULL,
         physical INTEGER NOT NULL,
         stun INTEGER NOT NULL,
         campaign_id INTEGER NOT NULL
@@ -87,9 +88,44 @@ pub fn upgrade_database_if_needed(db: &mut Connection, existing_version: u32) ->
         id INTEGER PRIMARY KEY,
         encounter_id INTEGER NOT NULL,
         combatten_id INTEGER NOT NULL,
-        damange INTEGER
+        damange INTEGER,
         initiative INTEGER
       );
+      "
+    )?;
+
+    tx.commit()?;
+  }
+
+  if existing_version < 3 {
+    db.pragma_update(None, "journal_mode", "WAL")?;
+
+    let tx = db.transaction()?;
+
+    tx.pragma_update(None, "user_version", CURRENT_DB_VERSION)?;
+
+    // Add type column to existing combattens table and set default value
+    tx.execute_batch(
+      "
+      ALTER TABLE combattens ADD COLUMN type TEXT DEFAULT 'npc';
+      UPDATE combattens SET type = 'npc' WHERE type IS NULL;
+      "
+    )?;
+
+    tx.commit()?;
+  }
+
+  if existing_version < 4 {
+    db.pragma_update(None, "journal_mode", "WAL")?;
+
+    let tx = db.transaction()?;
+
+    tx.pragma_update(None, "user_version", CURRENT_DB_VERSION)?;
+
+    // Fix encounter_combattens table - add missing initiative column and fix damage typo
+    tx.execute_batch(
+      "
+      ALTER TABLE encounter_combattens ADD COLUMN initiative INTEGER;
       "
     )?;
 

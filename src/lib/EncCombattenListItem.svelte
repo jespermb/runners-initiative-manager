@@ -4,7 +4,7 @@
     import ListItem from "./ListItem.svelte";
     const dispatch = createEventDispatcher();
 
-    const { name = "", id = 0 } = $props();
+    const { name = "", id = 0, initiative = null } = $props();
     let resultMsg = $state("");
     let showEditForm = $state(false);
     let editName = $state(name);
@@ -32,7 +32,7 @@
     }
 </script>
 
-<ListItem {name} on:remove={remove} on:edit={edit} />
+<ListItem name={initiative !== null ? `${initiative} - ${name}` : name} on:remove={remove} on:edit={edit} />
 
 <!-- This would be the edit form implementation
 {#if showEditForm}
