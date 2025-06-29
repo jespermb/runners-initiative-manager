@@ -9,6 +9,7 @@
     import AddNewCombatten from "../../../lib/forms/AddNewCombatten.svelte";
     import AddEncounterCombatten from "../../../lib/forms/AddEncounterCombatten.svelte";
     import FabButton from "../../../lib/FabButton.svelte";
+    import PageHeader from "../../../lib/ui/PageHeader.svelte";
     
     const { data }: PageProps = $props();
     let encounterId = $state(parseInt($page.params.id));
@@ -34,32 +35,17 @@
 
 <div class="cyberpunk-container">
     <div class="cyberpunk-header">
-        <div class="flex items-center">
-            <a href={"/campaign/" + encounter.campaign_id} class="cyberpunk-btn return mr-3" aria-label="Return">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-            </a>
-            <h2 class="header-title">Encounter: {encounter.name}</h2>
-        </div>
-        <button 
-            class="cyberpunk-btn edit"
-            onclick={() => {
-                // Edit encounter functionality would go here
-                // For now, just a placeholder
-                alert('Edit encounter: ' + encounter.name);
-            }}
-            aria-label="Edit"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-        </button>
+        <PageHeader
+            title={encounter.name}
+            backUrl={"/campaign/" + encounter.campaign_id}
+            onEdit={() => alert('Edit encounter: ' + encounter.name)}
+            editLabel="Edit Encounter"
+        />
     </div>
 
     <div class="content-container">
         {#if visibleTab === "combattens"}
-            <div class="flex flex-col gap-2 p-2">
+            <div class="flex flex-col gap-2 py-4">
                 {#each combattens as combatten}
                     <EncCombattenListItem
                         name={combatten.name}
@@ -75,7 +61,7 @@
             </div>
         {/if}
         {#if visibleTab === "stats"}
-            <div class="flex flex-col gap-2 p-2">
+            <div class="flex flex-col gap-2 py-4">
                 <p class="text-white">Encounter statistics will be shown here.</p>
             </div>
         {/if}
@@ -140,7 +126,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem;
+        padding: 1rem 0;
         border-bottom: 1px solid #00f3ff;
         margin-bottom: 1rem;
         position: relative;

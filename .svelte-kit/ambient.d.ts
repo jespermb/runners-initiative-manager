@@ -131,9 +131,11 @@ declare module '$env/static/private' {
 	export const GHOSTTY_BIN_DIR: string;
 	export const BUN_INSTALL: string;
 	export const NVM_BIN: string;
+	export const e12: string;
 	export const npm_config_user_agent: string;
 	export const HOMEBREW_CELLAR: string;
 	export const INFOPATH: string;
+	export const e13: string;
 	export const npm_package_dependencies_svelte_spa_router: string;
 	export const e10: string;
 	export const e11: string;
@@ -281,9 +283,11 @@ declare module '$env/dynamic/private' {
 		GHOSTTY_BIN_DIR: string;
 		BUN_INSTALL: string;
 		NVM_BIN: string;
+		e12: string;
 		npm_config_user_agent: string;
 		HOMEBREW_CELLAR: string;
 		INFOPATH: string;
+		e13: string;
 		npm_package_dependencies_svelte_spa_router: string;
 		e10: string;
 		e11: string;
